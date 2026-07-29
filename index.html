@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国城市2025年经济数据库 - 官方数据来源</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #333; }
+.header { background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%); color: white; padding: 24px 20px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.header h1 { font-size: 22px; margin-bottom: 6px; }
+.header p { font-size: 12px; opacity: 0.85; }
+.stats-bar { display: flex; justify-content: center; gap: 20px; margin-top: 12px; flex-wrap: wrap; }
+.stats-bar .stat { background: rgba(255,255,255,0.12); padding: 6px 16px; border-radius: 20px; font-size: 12px; }
+.stats-bar .stat b { color: #ffeb3b; font-size: 14px; }
+.search-section { background: white; padding: 16px 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); position: sticky; top: 100px; z-index: 99; }
+.search-box { display: flex; gap: 10px; max-width: 900px; margin: 0 auto 10px; }
+.search-box input { flex: 1; padding: 10px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; transition: border-color 0.2s; }
+.search-box input:focus { border-color: #3949ab; }
+.search-box select { padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; cursor: pointer; background: white; }
+.letter-filter { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; max-width: 900px; margin: 0 auto; }
+.letter-filter button { width: 30px; height: 30px; border: 1px solid #e0e0e0; background: white; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; color: #555; transition: all 0.15s; }
+.letter-filter button:hover { background: #e8eaf6; border-color: #3949ab; color: #1a237e; }
+.letter-filter button.active { background: #3949ab; color: white; border-color: #3949ab; }
+.table-container { max-width: 1200px; margin: 16px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { background: #1a237e; color: white; }
+thead th { padding: 12px 10px; text-align: left; font-weight: 600; cursor: pointer; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 10; }
+thead th:hover { background: #283593; }
+thead th .sort-arrow { font-size: 10px; margin-left: 3px; opacity: 0.6; }
+tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+tbody tr:hover { background: #f5f7fa; }
+tbody td { padding: 10px 10px; vertical-align: top; }
+.rank-cell { text-align: center; font-weight: bold; color: #999; width: 40px; }
+.rank-1 { background: #fff8e1; }
+.rank-2 { background: #faf5f5; }
+.rank-3 { background: #fff3e0; }
+.rank-top10 { background: #e8eaf6; }
+.city-name { font-weight: 600; color: #1a237e; font-size: 14px; }
+.province-tag { display: inline-block; background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-top: 2px; }
+.data-value { font-weight: 600; font-size: 14px; }
+.data-value.gdp { color: #d32f2f; }
+.data-value.retail { color: #2e7d32; }
+.data-value.income { color: #ef6c00; }
+.data-na { color: #bbb; font-size: 12px; }
+.source-link { font-size: 11px; color: #1976d2; text-decoration: none; display: block; margin-top: 2px; word-break: break-all; }
+.source-link:hover { text-decoration: underline; }
+.no-results { text-align: center; padding: 40px; color: #999; font-size: 16px; }
+.footer { text-align: center; padding: 20px; color: #999; font-size: 12px; line-height: 1.8; }
+.legend { max-width: 1200px; margin: 0 auto 12px; padding: 0 20px; font-size: 12px; color: #666; display: flex; gap: 20px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 4px; }
+.legend .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+@media (max-width: 768px) {
+  .header h1 { font-size: 18px; }
+  .stats-bar { gap: 8px; }
+  .stats-bar .stat { font-size: 11px; padding: 4px 10px; }
+  table { font-size: 12px; }
+  thead th, tbody td { padding: 8px 6px; }
+  .search-section { top: 90px; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>中国城市2025年经济数据库</h1>
+  <p>数据来源：国家统计局、各省市统计局统计公报、官媒转载官方数据 | 每项数据均附来源链接</p>
+  <div class="stats-bar" id="statsBar"></div>
+</div>
+
+<div class="search-section">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="输入拼音(如GUANGZHOU/GZ)或中文城市名搜索..." oninput="filterData()">
+    <select id="sortSelect" onchange="sortData()">
+      <option value="gdp-desc">GDP 降序</option>
+      <option value="gdp-asc">GDP 升序</option>
+      <option value="retail-desc">社零 降序</option>
+      <option value="income-desc">人均收入 降序</option>
+      <option value="pinyin-asc">拼音 A-Z</option>
+      <option value="province-asc">省份排序</option>
+    </select>
+  </div>
+  <div class="letter-filter" id="letterFilter"></div>
+</div>
+
+<div class="legend">
+  <span><span class="dot" style="background:#fff8e1"></span> GDP第1名</span>
+  <span><span class="dot" style="background:#faf5f5"></span> GDP第2名</span>
+  <span><span class="dot" style="background:#fff3e0"></span> GDP第3名</span>
+  <span><span class="dot" style="background:#e8eaf6"></span> GDP前10名</span>
+  <span style="color:#999">「暂未公布」表示该市2025年统计公报尚未发布该项数据</span>
+</div>
+
+<div class="table-container">
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>排名</th>
+        <th>城市 / 拼音</th>
+        <th>省份</th>
+        <th onclick="sortBy('gdp')">GDP(亿元) <span class="sort-arrow">▼</span></th>
+        <th onclick="sortBy('retail')">社零总额(亿元) <span class="sort-arrow"></span></th>
+        <th onclick="sortBy('income')">人均可支配收入(元) <span class="sort-arrow"></span></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<div class="footer">
+  <p>本数据库收录全国地级及以上城市2025年经济数据 | 共297个地级行政区</p>
+  <p>GDP数据来源：各市统计局统计公报、聚汇数据(gdp.gotohui.com)、优欧商联网(euobiz.cn)</p>
+  <p>社零数据来源：各市统计局官网统计公报、国家统计局各地调查队</p>
+  <p>人均可支配收入来源：各市统计局、国家统计局各地调查队</p>
+  <p>权威数据平台：stats.gov.cn | 各省市统计局官网均可查证</p>
+  <p style="margin-top:8px;color:#888;">⚠️ GDP前100城市中：社零已覆盖98城、人均收入已覆盖97城。其余城市2025年统计公报数据持续补齐中</p>
+</div>
+
+<script>
+// 数据来源URL常量
+const SRC = {
+  gotohui: { name: '聚汇数据(各市统计局)', url: 'https://gdp.gotohui.com/topic-5491' },
+  gotohuiGd: { name: '聚汇数据(广东各市统计局)', url: 'https://gdp.gotohui.com/topic-5453' },
+  euobiz: { name: '优欧商联网(各省市统计局)', url: 'https://euobiz.cn/finance/china-gdp-2025.html' },
+  china5e: { name: '中国能源网(各市统计局)', url: 'https://www.china5e.com/news/news-1201036-1.html' },
+  donews: { name: 'DoNews(各市统计局)', url: 'https://www.donews.com/news/detail/4/6458150.html' },
+  qqIncome: { name: '腾讯新闻(各市统计局)', url: 'https://news.qq.com/rain/a/20260604A03SL400' },
+  net163: { name: '网易(各市统计局)', url: 'https://www.163.com/dy/article/KOA85ILO0556645W.html' },
+  nbs: { name: '国家统计局', url: 'https://www.stats.gov.cn/sj/zxfbhjd/202602/t20260228_1962662.html' },
+  qdStats: { name: '青岛市统计局', url: 'http://qdtj.qingdao.gov.cn/tongjisj/zxfbyjd/202601/t20260127_10489245.html' },
+  qdIncome: { name: '青岛市统计局(收入)', url: 'http://sd.news.cn/20260128/32bb267c06b449dc9088f1ae7eed866f/c.html' },
+  jnStats: { name: '济南市统计局', url: 'https://jntj.jinan.gov.cn/col/col18254/art/2026/art_7dc3135bb2209f961b3c65baa8ab3d2d.html' },
+  ytStats: { name: '烟台市统计局', url: 'https://www.yantai.gov.cn/col/col43176/art/2026/art_e32aa66a577f49e5a90c3246a32e166f.html' },
+  fsStats: { name: '佛山市统计局', url: 'https://www.foshan.gov.cn/gzjg/stjj/tjkx/content/post_6959348.html' },
+  dgStats: { name: '东莞市统计局', url: 'http://tjj.dg.gov.cn/tjzl/tjfx/content/post_4495895.html' },
+  wzStats: { name: '温州市统计局', url: 'https://zjzd.stats.gov.cn/gjtjjwzdcd/dcsj/tjgb/art/2026/art_c10d7fff23af4793b579d9208f3debf9.html' },
+  tzStats: { name: '台州市统计局', url: 'https://tjj.zjtz.gov.cn/col/col1229890988/art/2026/art_a70edc73e04b4d3284c02cc749511c75.html' },
+  nbStats: { name: '宁波市统计局', url: 'https://m.nbd.com.cn/articles/2026-01-26/4235653.html' },
+  qzStats: { name: '泉州市统计局', url: 'https://tjj.quanzhou.gov.cn/zwgk/zfxxgk/fdzdgknr/tjxx/tjgb/202603/t20260331_3279583.htm' },
+  fzStats: { name: '福州市统计局', url: 'http://fz.fjdsfzw.org.cn/wap/2026-04-14/content_176214.html' },
+  xaStats: { name: '西安市统计局', url: 'https://www.xa.gov.cn/gk/zfgb/2026ndeq/tjsj/2018511615350665218.html' },
+  hfStats: { name: '合肥市统计局', url: 'https://baijiahao.baidu.com/s?id=1855535498757608555' },
+  chengduStats: { name: '成都市统计局', url: 'https://cdstats.chengdu.gov.cn/cdstjj/c154784/2026-01/23/content_44cebcc2dd0141c9991894c9fee1c3b9.shtml' },
+  cdIncome: { name: '成都市统计局(收入)', url: 'https://www.scpublic.cn/news/getNewsDatail?id=863455' },
+  tjIncome: { name: '天津市统计局(收入)', url: 'http://tjzd.stats.gov.cn/system/2026/01/20/030241179.shtml' },
+  cqIncome: { name: '重庆市统计局(收入)', url: 'https://local.cctv.com/2026/01/26/ARTIxEmwqx7xzdDguzQmWxyl260126.shtml' },
+  wuhanIncome: { name: '武汉市统计局(收入)', url: 'https://tjj.wuhan.gov.cn/tjfw/tjgb/202604/t20260408_2750693.shtml' },
+  syIncome: { name: '沈阳市统计局(收入)', url: 'https://www.shenyang.gov.cn/wssy/shms/' },
+  sdIncome: { name: '山东省各市统计局(人均收入)', url: 'https://baijiahao.baidu.com/s?id=1858960851937649474' },
+  fjIncome: { name: '福建省各市统计局(人均收入)', url: 'https://baijiahao.baidu.com/s?id=1865535158155945862' },
+  ntStats: { name: '南通市统计局', url: 'https://tjj.nantong.gov.cn/ntstj/xwfbh/content/ac72ff2c-64c3-4f9c-8c26-1fac862831ee.html' },
+  czStats: { name: '常州市统计局', url: 'http://tjj.changzhou.gov.cn/index.php?c=phone&a=show&id=28965&catid=24516' },
+  ycStats: { name: '盐城市统计局', url: 'http://tjj.yancheng.gov.cn/art/2026/6/24/art_1773_4433668.html' },
+  tz2Stats: { name: '泰州市统计局', url: 'https://tjj.taizhou.gov.cn/xxgk/fdzdgknr/tjxx/tjgb/art/2026/art_2be9ac8eac814cd784c0ece81a1ee73b.html' },
+  yzStats: { name: '扬州市统计局', url: 'https://yangzhou.gov.cn/mlyz/yzgk/gmjj/art/2026/art_b359d68b709949b59dc44c641a627c2e.html' },
+  hzStat: { name: '惠州市统计局', url: 'http://www.gd.gov.cn/zwgk/sjfb/dssj/content/post_4851468.html' },
+  zhStat: { name: '珠海市统计局', url: 'https://tjj.zhuhai.gov.cn/tjsj/tjzl/tjfx/content/post_3875532.html' },
+  jmStat: { name: '江门市统计局', url: 'https://www.jiangmen.gov.cn/newzwgk/sjfb/sjkd/content/post_3439703.html' },
+  mmStat: { name: '茂名市统计局', url: 'http://www.gd.gov.cn/zwgk/sjfb/dssj/content/post_4852645.html' },
+  yc2Stats: { name: '宜昌市统计局', url: 'https://www.yichang.gov.cn/zfxxgk/show.html?aid=1&id=244301' },
+  wuxiStats: { name: '无锡市统计局', url: 'https://tj.wuxi.gov.cn/doc/2026/05/09/4772420.shtml' },
+  gdStats: { name: '广东省统计局', url: 'https://stats.gd.gov.cn/tjgb/content/post_4876564.html' },
+  sdStats: { name: '山东省统计局', url: 'http://tjj.shandong.gov.cn/art/2026/3/3/art_6196_10322526.html' },
+  jsStats: { name: '江苏省统计局', url: 'https://www.jiangsu.gov.cn/art/2026/4/23/art_64797_11761592.html' },
+  zjStats: { name: '浙江省统计局', url: 'https://tjj.zj.gov.cn/' },
+  scStats: { name: '四川省统计局', url: 'http://tjj.sc.gov.cn/' },
+  hnStats: { name: '河南省统计局', url: 'https://tjj.henan.gov.cn/2026/02-09/3325010.html' },
+  hbStats: { name: '湖北省统计局', url: 'https://tjj.hubei.gov.cn/' },
+  fjStats: { name: '福建省统计局', url: 'https://www.fujian.gov.cn/zwgk/sjfb/tjgb/202603/t20260313_7109476.htm' },
+  ahStats: { name: '安徽省统计局', url: 'https://tjj.ah.gov.cn/ssah/qwfbjd/tjgb/sjtjgb/150467631.html' },
+  hn2Stats: { name: '湖南省统计局', url: 'http://tjj.hunan.gov.cn/' },
+  hebeiStats: { name: '河北省统计局', url: 'http://tjj.hebei.gov.cn/' },
+  shaanxiStats: { name: '陕西省统计局', url: 'http://tjj.shaanxi.gov.cn/' },
+  jiangxiStats: { name: '江西省统计局', url: 'http://tjj.jiangxi.gov.cn/' },
+  gxStats: { name: '广西统计局', url: 'http://tjj.gxzf.gov.cn/' },
+  ynStats: { name: '云南省统计局', url: 'http://tjj.yn.gov.cn/' },
+  guizhouStats: { name: '贵州省统计局', url: 'http://stjj.guizhou.gov.cn/' },
+  xjStats: { name: '新疆统计局', url: 'http://tjj.xinjiang.gov.cn/' },
+  nmStats: { name: '内蒙古统计局', url: 'http://tj.nmg.gov.cn/' },
+  sx2Stats: { name: '山西省统计局', url: 'http://tjj.shanxi.gov.cn/' },
+  lnStats: { name: '辽宁省统计局', url: 'http://tjj.ln.gov.cn/' },
+  hljStats: { name: '黑龙江省统计局', url: 'http://tjj.hlj.gov.cn/' },
+  jlStats: { name: '吉林省统计局', url: 'http://tjj.jl.gov.cn/' },
+  gsStats: { name: '甘肃省统计局', url: 'http://tjj.gansu.gov.cn/' },
+  hiStats: { name: '海南省统计局', url: 'http://stats.hainan.gov.cn/' },
+  nxStats: { name: '宁夏统计局', url: 'http://nxtj.nx.gov.cn/' },
+  qhStats: { name: '青海省统计局', url: 'http://tjj.qinghai.gov.cn/' },
+  xizangStats: { name: '西藏统计局', url: 'http://tjj.xizang.gov.cn/' },
+  cqStats: { name: '重庆市统计局', url: 'http://tjj.cq.gov.cn/' },
+  shStats: { name: '上海市统计局', url: 'http://tjj.sh.gov.cn/' },
+  bjStats: { name: '北京市统计局', url: 'http://tjj.beijing.gov.cn/' },
+  tjStats: { name: '天津市统计局', url: 'http://stats.tj.gov.cn/' },
+  tianjinRetail: { name: '天津市统计局', url: 'https://www.163.com/dy/article/KM14T2FT05388U6J.html' },
+  dgIncome: { name: '东莞市统计局(收入)', url: 'http://tjj.dg.gov.cn/gkmlpt/content/4/4537/post_4537415.html' },
+  hzIncome: { name: '惠州市统计局(收入)', url: 'http://www.gd.gov.cn/zwgk/sjfb/dssj/content/post_4851468.html' },
+  zqIncome: { name: '肇庆市统计局(收入)', url: 'https://www.zhaoqing.gov.cn/zqtjj/gkmlpt/content/3/3203/post_3203772.html' },
+  mmIncome: { name: '茂名市统计局(收入)', url: 'http://www.maoming.gov.cn/zwgk/sjfb/tjgb/content/post_1612930.html' },
+  sxStats: { name: '绍兴市统计局', url: 'https://zjzd.stats.gov.cn/gjtjjsxdcd/dccg/njgb/art/2026/art_494a657fdcfa4ba4bf679f880c55d8bc.html' },
+  jxStats: { name: '嘉兴市统计局', url: 'https://tjj.jiaxing.gov.cn/col/col1512321/art/2026/art_38e28ce32b7c4e6bba2b1888752f97cc.html' },
+  jhStats: { name: '金华市统计局', url: 'http://tjj.jinhua.gov.cn/col/col1229317895/art/2026/art_7bf4836ea4b5443f806fb6046a1cb616.html' },
+  huzStats: { name: '湖州市统计局', url: 'https://www.huzhou.gov.cn/col/col1229213530/art/2026/art_945b52b8d3ef40ecbed464a16572c8b0.html' },
+  xzStats: { name: '徐州市统计局', url: 'http://tjj.xz.gov.cn/' },
+  dyStats: { name: '东营市统计局', url: 'http://www.dongying.gov.cn/art/2026/2/2/art_229038_10465432.html' },
+  lyStats: { name: '临沂市统计局', url: 'https://www.linyi.gov.cn/info/6190/416539.htm' },
+  sjzStats: { name: '石家庄市统计局', url: 'https://www.sjz.gov.cn/columns/839b1981-330e-4901-aba5-6c392154ce03/202605/26/06f23d4b-7e86-4109-bd56-5c75925b6e28.html' },
+  sjzIncome: { name: '石家庄市统计局(收入)', url: 'https://www.sjz.gov.cn/columns/839b1981-330e-4901-aba5-6c392154ce03/202605/26/06f23d4b-7e86-4109-bd56-5c75925b6e28.html' },
+  tsIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  bdIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  cangStats: { name: '沧州市统计局', url: 'https://tj.cangzhou.gov.cn/tj/c101217/202602/7dc8e082563d4a16b4e30a87b6445eaf.shtml' },
+  cangIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  hdStats: { name: '邯郸市统计局', url: 'https://www.hd.gov.cn/hdzfxxgk/gszbm/auto23694/202606/t20260612_2205418.html' },
+  hdIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  lfStats: { name: '廊坊市统计局', url: 'https://fgw.lf.gov.cn/Item/7748.aspx' },
+  lfIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  qhdIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  xtIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  hsIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  lyRetail: { name: '洛阳市统计局', url: 'https://www.ly.gov.cn/2026/05-11/1060335.html' },
+  xyIncome: { name: '襄阳市统计局(收入)', url: 'http://www.xiangyang.gov.cn/szf/zfxxgk/fdzdgknr/tjxx/tjgb/202606/t20260623_4020465.shtml' },
+  jzIncome: { name: '荆州市统计局(收入)', url: 'https://tjj.hubei.gov.cn/tjsj/tjgb/ndtjgb/sztjgb/202605/P020260508383487119307.pdf' },
+  sysIncome: { name: '十堰市统计局(收入)', url: 'https://tjj.hubei.gov.cn/tjsj/tjgb/ndtjgb/sztjgb/202605/P020260508379027628693.pdf' },
+  hsIncome2: { name: '黄石市统计局(收入)', url: 'https://baijiahao.baidu.com/s?id=1857948307306004047' },
+  yyStats: { name: '岳阳市统计局', url: 'https://yueyang.gov.cn/tjgb/content_2380060.html' },
+  yyIncome: { name: '岳阳市统计局(收入)', url: 'https://yueyang.gov.cn/tjgb/content_2380060.html' },
+  xaIncome: { name: '西安市统计局(收入)', url: 'https://tjj.shaanxi.gov.cn/tjsj/ndsj/tjgb/gs/202606/t20260609_3645959.html' },
+  wnIncome: { name: '渭南市统计局(收入)', url: 'https://tjj.shaanxi.gov.cn/tjsj/ndsj/tjgb/gs/202606/t20260608_3645571.html' },
+  ncStats: { name: '南昌市统计局', url: 'https://jxx.nc.gov.cn/jxxrmzf/bmqtfdxxvs/202605/c122856a2609470e898e7500c7ac6c28.shtml' },
+  gzIncome: { name: '赣州市统计局(收入)', url: 'https://www.ganzhou.gov.cn/gzszf/c100022/202604/38a12f964da545109b1b16697faee249.shtml' },
+  whIncome: { name: '芜湖市统计局(收入)', url: 'https://www.sohu.com/a/1000497837_121861075' },
+  dlStats: { name: '大连市统计局', url: 'https://www.dl.gov.cn/art/2026/1/30/art_861_2497820.html' },
+  gyStats: { name: '贵阳市统计局', url: 'https://baijiahao.baidu.com/s?id=1864773820035650370' },
+  nnIncome: { name: '南宁市统计局(收入)', url: 'https://baijiahao.baidu.com/s?id=1870517643962372155' },
+  liuzhouIncome: { name: '柳州市统计局(收入)', url: 'http://tjj.gxzf.gov.cn/tjsj/jdfx/sx/t27222251.shtml' },
+  btStats: { name: '包头市统计局', url: 'http://tjj.baotou.gov.cn/tjyw/tjgb/202604/t20260424_896820.html' },
+  btIncome: { name: '包头市统计局(收入)', url: 'http://tjj.baotou.gov.cn/tjyw/tjgb/202604/t20260424_896820.html' },
+  jzStats: { name: '荆州市统计局', url: 'https://zwgk.jingzhou.gov.cn/40230/104220263/t113220263044/686252.shtml' },
+  gzStats: { name: '赣州市统计局', url: 'https://www.ganzhou.gov.cn/gzszf/c100022/202604/38a12f964da545109b1b16697faee249.shtml' },
+  hhStat: { name: '呼和浩特市统计局', url: 'http://tjj.huhhot.gov.cn/tjyw/tjsj/tjgb/202604/t20260418_1991686.html' },
+  ntIncome: { name: '江苏省各市统计局(收入)', url: 'https://www.toutiao.com/article/7625847243148378667/' },
+  yzIncome: { name: '江苏省各市统计局(收入)', url: 'https://www.toutiao.com/article/7625847243148378667/' },
+  tz2Income: { name: '泰州市统计局(收入)', url: 'https://tjj.taizhou.gov.cn/xxgk/fdzdgknr/tjxx/tjgb/art/2026/art_2be9ac8eac814cd784c0ece81a1ee73b.html' },
+  sqIncome: { name: '宿迁市统计局(收入)', url: 'https://www.toutiao.com/article/7625847243148378667/' },
+  zsStats: { name: '中山市统计局', url: 'https://www.zs.gov.cn/zwgk/sjfb/tjgb/content/post_2617216.html' },
+  zsIncome: { name: '中山市统计局(收入)', url: 'https://www.zs.gov.cn/zwgk/sjfb/tjgb/content/post_2617216.html' },
+  zbStats: { name: '淄博市统计局', url: 'https://tj.zibo.gov.cn/' },
+  jnStats2: { name: '济宁市统计局', url: 'https://www.jining.gov.cn/art/2026/2/2/art_33405_2922031.html' },
+  hzStats: { name: '菏泽市统计局', url: 'http://tjj.heze.gov.cn/' },
+  whStats: { name: '威海市统计局', url: 'http://tjj.weihai.gov.cn/' },
+  taStats: { name: '泰安市统计局', url: 'https://tjj.taian.gov.cn/art/2026/4/14/art_46885_10300829.html' },
+  cdStats: { name: '常德市统计局', url: 'https://tjj.changde.gov.cn/zwgk/public/6617368/3906652491.html' },
+  kmIncome: { name: '昆明市统计局(收入)', url: 'https://www.km.gov.cn/c/2026-01-28/5053005.shtml' },
+  ycIncome: { name: '宜昌市统计局(收入)', url: 'http://fgw.yichang.gov.cn/content-39409-984216-1.html' },  csRetail: { name: '长沙市统计局', url: 'https://tjj.hunan.gov.cn/hntj/tjfx/tjgb/szgb/zss_1/202605/t20260512_33975356.html' },
+  syRetail: { name: '沈阳市统计局', url: 'https://www.shenyang.gov.cn/wssy/syjj/gnmy/' },
+  kmRetail: { name: '昆明市统计局', url: 'https://tjj.km.gov.cn/upload/resources/file/2026/05/21/4248107.pdf' },
+  wfRetail: { name: '潍坊市统计局', url: 'http://tjj.weifang.gov.cn/55356/1306569853.html' },
+  yzRetail: { name: '扬州市统计局', url: 'https://yangzhou.gov.cn/mlyz/yzgk/gmjj/art/2026/art_b359d68b709949b59dc44c641a627c2e.html' },
+  ccRetail: { name: '长春市统计局', url: 'http://tjj.changchun.gov.cn/tjgb/202605/t20260509_3486019.html' },
+  ylRetail: { name: '榆林市统计局', url: 'https://tjj.yl.gov.cn/tjsj/tjgb/202606/t20260630_2110837.html' },
+  nnRetail: { name: '南宁市统计局', url: 'https://tjgb.hongheiku.com/xjtjgb/xj2020/72266.html' },
+  hrbRetail: { name: '哈尔滨市统计局', url: 'https://www.harbin.gov.cn/haerbin/c104569/202606/c01_1129059.shtml' },
+  eedsRetail: { name: '鄂尔多斯市统计局', url: 'https://www.ordos.gov.cn/xw_127672/bmdt/202505/t20250508_3792153.html' },
+  xyRetail: { name: '襄阳市统计局', url: 'http://www.xiangyang.gov.cn/szf/zfxxgk/fdzdgknr/tjxx/tjgb/202606/t20260623_4020465.shtml' },
+  zjRetail: { name: '镇江市统计局', url: 'https://www.zhenjiang.gov.cn/tjj/tjgb/202605/08c976733fe441c2b622a0ba227fa2bc.shtml' },
+  haRetail: { name: '淮安市统计局', url: 'https://tjj.huaian.gov.cn/tjgb/content/17775648/1778659427789n1us7Pf5.html' },
+  whRetail: { name: '芜湖市统计局', url: 'https://tjj.wuhu.gov.cn/tjxx/tjgb/8939438.html' },
+  tyRetail: { name: '太原市统计局', url: 'https://stats.taiyuan.gov.cn/sjjd/20260202/30281546.html' },
+  nyRetail: { name: '南阳市统计局', url: 'https://tj.nanyang.gov.cn/2026/04-20/1398809.html' },
+  sqRetail: { name: '宿迁市统计局', url: 'https://www.suqian.gov.cn/cnsq/sjdt/202605/b4c6e068f19b45c9b3b70bcb047335d2.shtml' },
+  bdRetail: { name: '保定市统计局', url: 'https://www.sohu.com/a/1029848423_121106842' },
+  wlmqRetail: { name: '乌鲁木齐市统计局', url: 'https://www.wlmq.gov.cn/wlmqs/c119359/202604/6070ed21632343cca95db20395862469.shtml' },
+  myRetail: { name: '绵阳市统计局', url: 'https://tjj.my.gov.cn/mystjj/c101712/202601/c2a913b09ff540659022408a1b8be8af.shtml' },
+  jjRetail: { name: '九江市统计局', url: 'https://www.jjxw.cn/article/2026/05/29/779574.html' },
+  czRetail: { name: '滁州市统计局', url: 'https://tjj.chuzhou.gov.cn/qwfb/1104459705.html' },
+  dzRetail: { name: '德州市统计局', url: 'http://dztj.dezhou.gov.cn/n54289016/n54289061/n54289131/c99284987/content.html' },
+  ybRetail: { name: '宜宾市统计局', url: 'https://tjj.yibin.gov.cn/xxgkpt/detail.html?deptId=92337828&docId=1055969&id=11a1b30c-4bfc-4317-8736-02308e114aef' },
+  zjRetail2: { name: '湛江市统计局', url: 'https://www.zhanjiang.gov.cn/zjsfw/bmdh/tjxxw/zwgk/tjsjzl/content/post_2172273.html' },
+  lzRetail: { name: '兰州市统计局', url: 'https://www.lanzhou.gov.cn/art/2026/5/29/art_24541_1707418.html' },
+  qjRetail: { name: '曲靖市统计局', url: 'https://qeda.qj.gov.cn/html/2026/tjxx_0303/17969.html' },
+  bzRetail: { name: '滨州市统计局', url: 'http://tj.binzhou.gov.cn/module/download/downfile.jsp?classid=0&filename=d3b894681c2a484fb8d7be6d9b084c64.pdf' },
+  lcRetail: { name: '聊城市统计局', url: 'http://tjj.liaocheng.gov.cn/channel_t_178_12966/doc_697c76dbf0c8fadb14621150.html' },
+  hhRetail: { name: '红河州统计局', url: 'https://www.hh.gov.cn/info/199892/1266292.htm' },
+  xyRetail2: { name: '咸阳市统计局', url: 'https://tjj.xianyang.gov.cn/tjgz/tjxx/202601/t20260126_2054794.html' },
+  ycRetail: { name: '银川市统计局', url: 'https://www.yinchuan.gov.cn/xxgk/bmxxgkml/stjj/xxgkml_2517/tjxx_7670/sjtj/202604/t20260427_5226198.html' },
+  stRetail: { name: '汕头市统计局', url: 'https://www.shantou.gov.cn/tjj/tjzl/tjgb/content/post_2532926.html' },
+  lzRetail2: { name: '泸州市统计局', url: 'https://tjj.luzhou.gov.cn/tjsj/tjgb/content_1131513' },
+  dzRetail2: { name: '达州市统计局', url: 'https://www.dazhou.gov.cn/news-show-268817.html' },
+  zqRetail: { name: '肇庆市统计局', url: 'https://www.zhaoqing.gov.cn/zqtjj/gkmlpt/content/3/3203/post_3203772.html' },
+  dlIncome: { name: '大连市统计局(收入)', url: 'https://news.qq.com/rain/a/20260130A05D7100' },
+  wfIncome: { name: '潍坊市统计局(收入)', url: 'http://tjj.weifang.gov.cn/55356/1306569853.html' },
+  ncIncome: { name: '南昌调查队(收入)', url: 'http://baijiahao.baidu.com/s?id=1855546455830658214' },
+  zjIncome: { name: '镇江市统计局(收入)', url: 'https://www.zhenjiang.gov.cn/tjj/tjgb/202605/08c976733fe441c2b622a0ba227fa2bc.shtml' },
+  hrbIncome: { name: '哈尔滨市统计局(收入)', url: 'https://www.harbin.gov.cn/haerbin/c104569/202606/c01_1129059.shtml' },
+  eedsIncome: { name: '鄂尔多斯市统计局(收入)', url: 'https://q.stock.sohu.com/cn/news.html?textId=973667944' },
+  tyIncome: { name: '太原市统计局(收入)', url: 'https://stats.taiyuan.gov.cn/sjjd/20260202/30281546.html' },
+  nyIncome: { name: '南阳市统计局(收入)', url: 'https://tj.nanyang.gov.cn/2026/04-20/1398809.html' },
+  cdIncome2: { name: '常德市统计局(收入)', url: 'https://www.changde.gov.cn/cdzx/cdyw/content_78186608' },
+  wlmqIncome: { name: '乌鲁木齐市统计局(收入)', url: 'https://www.wlmq.gov.cn/wlmqs/c119359/202604/6070ed21632343cca95db20395862469.shtml' },
+  myIncome: { name: '绵阳市统计局(收入)', url: 'https://baijiahao.baidu.com/s?id=1859960706802793282' },
+  zhIncome: { name: '珠海市统计局(收入)', url: 'https://tjj.zhuhai.gov.cn/attachment/0/437/437426/3920263.pdf' },
+  jmIncome: { name: '江门市统计局(收入)', url: 'https://www.jiangmen.gov.cn/attachment/0/377/377386/3494630.pdf' },
+  hhhtIncome: { name: '呼和浩特市统计局(收入)', url: 'http://www.huhhot.gov.cn/bmxxgk/szfzcbm/stjj_22427/fdzdgknr_24752/bmgk/202605/t20260529_2009304.html' },
+  zjIncome2: { name: '湛江市统计局(收入)', url: 'https://www.zhanjiang.gov.cn/zjsfw/bmdh/tjxxw/zwgk/tjsjzl/content/post_2172273.html' },
+  qjIncome: { name: '曲靖市统计局(收入)', url: 'https://mp.weixin.qq.com/s?__biz=MzU1NDcyMTMwNQ==&mid=2247513645&idx=1&sn=99b30bfb66088dbc3ce335871ddea53a' },
+  hhIncome: { name: '红河州统计局(收入)', url: 'https://www.sohu.com/a/979317694_121106902' },
+  gyIncome: { name: '贵阳市统计局(收入)', url: 'https://www.guiyang.gov.cn/zwgk/zfxxgks/fdzdgknr/tjxx/tjgb/202605/t20260512_90163109.html' },
+  lzIncome: { name: '兰州市统计局(收入)', url: 'https://www.lanzhou.gov.cn/art/2026/5/29/art_24541_1707418.html' },
+  ycIncome2: { name: '银川市统计局(收入)', url: 'https://www.yinchuan.gov.cn/xxgk/bmxxgkml/stjj/xxgkml_2517/tjxx_7670/sjtj/202604/t20260427_5226198.html' },
+  jjIncome: { name: '九江市统计局(收入)', url: 'https://www.jjxw.cn/article/2026/05/29/779574.html' },
+  zyIncome: { name: '遵义市统计局(收入)', url: 'https://m12333.cn/qa/ssizb.html' },
+  csStats: { name: '长沙市统计局', url: 'http://tjj.hunan.gov.cn/' },
+  haStats: { name: '河南省统计局', url: 'https://tjj.henan.gov.cn/2026/02-09/3325010.html' },
+  hebStats: { name: '河北省统计局', url: 'http://tjj.hebei.gov.cn/' },
+  hljStat: { name: '黑龙江省统计局', url: 'http://tjj.hlj.gov.cn/' },
+  nmgStat: { name: '内蒙古统计局', url: 'http://tj.nmg.gov.cn/' },
+  wfGDP: { name: '潍坊市统计局', url: 'https://www.weifang.gov.cn/' },
+
+
+  tsRetail: { name: '唐山商务局/人民日报', url: 'https://sdxw.iqilu.com/w/article/YS0yMS0xNzI5Nzg3OA.html' },
+  tsIncome: { name: '河北省各市收入排名(百家号)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
+  ncRetail: { name: '南充市统计局/南充日报', url: 'https://www.sohu.com/a/1016928569_121106884' },
+  ncIncome: { name: '南充市统计局(估算)', url: 'https://www.sohu.com/a/1016928569_121106884' },
+  lygRetail: { name: '连云港市统计局/投资促进局', url: 'http://boc.lyg.gov.cn/sswj/csgl/content/65acc5a3-4b7f-4980-95dd-6e7cbbc98f0e.html' },
+  lygIncome: { name: '连云港市统计局(CEIC)', url: 'https://www.ceicdata.com/zh-hans/china/disposable-income-per-capita-prefecture-level-city/disposable-income-per-capita-jiangsu-lianyungang' },
+  ylIncome2: { name: '榆林统计/搜狐', url: 'https://www.sohu.com/a/982847862_121106869' },
+  czIncome: { name: '滁州市统计局/搜狐', url: 'https://www.sohu.com/a/985592201_121123725' },
+  ybIncome: { name: '宜宾市统计局', url: 'https://tjj.yibin.gov.cn/sjfb/tjgb/202604/P020260416429904378257.pdf' },
+  stIncome: { name: '汕头市统计局', url: 'https://www.shantou.gov.cn/tjj/tjzl/content/post_2512060.html' },
+
+};
+
+function srcLink(s) { return s ? `<a href="${s.url}" target="_blank" class="source-link">📌 ${s.name}</a>` : ''; }
+
+// 城市数据：[中文名, 拼音, 省份, GDP(亿元), GDP来源, 社零(亿元), 社零来源, 人均收入(元), 收入来源]
+const cityData = [
+// === 直辖市 ===
+["上海","SHANGHAI","上海",56708.71,SRC.shStats,16600.93,SRC.china5e,91987,SRC.shStats],
+["北京","BEIJING","北京",52073.4,SRC.bjStats,13677,SRC.china5e,89090,SRC.bjStats],
+["重庆","CHONGQING","重庆",33757.93,SRC.cqStats,16688.5,SRC.china5e,41580,SRC.cqIncome],
+["天津","TIANJIN","天津",18539.82,SRC.tjStats,4140.7,SRC.tianjinRetail,55918,SRC.tjIncome],
+
+// === 广东21市 ===
+["深圳","SHENZHEN","广东",38731.8,SRC.gdStats,10259.93,SRC.china5e,84945,SRC.qqIncome],
+["广州","GUANGZHOU","广东",32039.46,SRC.gdStats,11032.38,SRC.china5e,80591,SRC.qqIncome],
+["佛山","FOSHAN","广东",13157.35,SRC.gdStats,3945.94,SRC.fsStats,71995,SRC.qqIncome],
+["东莞","DONGGUAN","广东",12760.2,SRC.gdStats,4446,SRC.dgStats,70803,SRC.dgIncome],
+["惠州","HUIZHOU","广东",6363.66,SRC.gdStats,2093.22,SRC.hzStat,50812,SRC.hzIncome],
+    ["珠海","ZHUHAI","广东",4573.1,SRC.gdStats,918.65,SRC.zhStat,69532,SRC.zhIncome],
+    ["江门","JIANGMEN","广东",4293.91,SRC.gdStats,1307.95,SRC.jmStat,44524,SRC.jmIncome],
+["中山","ZHONGSHAN","广东",4260.56,SRC.gdStats,1604.29,SRC.zsStats,66837,SRC.zsIncome],
+["茂名","MAOMING","广东",4106.4,SRC.gdStats,1557.39,SRC.mmStat,32091,SRC.mmIncome],
+    ["湛江","ZHANJIANG","广东",3952.94,SRC.gdStats,1620.06,SRC.zjRetail2,32336,SRC.zjIncome2],
+    ["汕头","SHANTOU","广东",3023.83,SRC.gdStats,1483.23,SRC.stRetail,36216,SRC.stIncome],
+    ["肇庆","ZHAOQING","广东",2974.84,SRC.gdStats,1217.7,SRC.zqRetail,35374,SRC.zqIncome],
+["揭阳","JIEYANG","广东",2553.75,SRC.gdStats,null,null,null,null],
+["清远","QINGYUAN","广东",2317.47,SRC.gdStats,null,null,null,null],
+["韶关","SHAOGUAN","广东",1705.1,SRC.gdStats,null,null,null,null],
+["阳江","YANGJIANG","广东",1671.22,SRC.gdStats,null,null,null,null],
+["梅州","MEIZHOU","广东",1583.23,SRC.gdStats,null,null,null,null],
+["汕尾","SHANWEI","广东",1546.3,SRC.gdStats,null,null,null,null],
+["潮州","CHAOZHOU","广东",1452.17,SRC.gdStats,null,null,null,null],
+["河源","HEYUAN","广东",1434.57,SRC.gdStats,null,null,null,null],
+["云浮","YUNFU","广东",1344.87,SRC.gdStats,null,null,null,null],
+
+// === 江苏13市 ===
+["苏州","SUZHOU","江苏",27695.09,SRC.jsStats,9092.2,SRC.china5e,80796,SRC.qqIncome],
+["南京","NANJING","江苏",19428.78,SRC.jsStats,8135.85,SRC.china5e,78243,SRC.qqIncome],
+["无锡","WUXI","江苏",16773.94,SRC.jsStats,4418.47,SRC.wuxiStats,75200,SRC.qqIncome],
+["南通","NANTONG","江苏",12801.5,SRC.jsStats,3855.4,SRC.ntStats,57242,SRC.ntIncome],
+["常州","CHANGZHOU","江苏",11158.71,SRC.jsStats,2918.1,SRC.czStats,68295,SRC.net163],
+["徐州","XUZHOU","江苏",9957.22,SRC.jsStats,3398.7,SRC.xzStats,42230,SRC.net163],
+    ["扬州","YANGZHOU","江苏",8056.75,SRC.jsStats,1961.68,SRC.yzRetail,54386,SRC.yzIncome],
+["盐城","YANCHENG","江苏",8045.28,SRC.jsStats,2894.7,SRC.ycStats,45713,SRC.net163],
+["泰州","TAIZHOU","江苏",7255.27,SRC.jsStats,1834.75,SRC.tz2Stats,52996,SRC.tz2Income],
+    ["镇江","ZHENJIANG","江苏",5736.78,SRC.jsStats,1742.63,SRC.zjRetail,61387,SRC.zjIncome],
+    ["淮安","HUAIAN","江苏",5630.11,SRC.jsStats,1872.34,SRC.haRetail,43553,SRC.net163],
+    ["宿迁","SUQIAN","江苏",5026.6,SRC.jsStats,1739.07,SRC.sqRetail,36889,SRC.sqIncome],
+["连云港","LIANYUNGANG","江苏",4830.94,SRC.jsStats,1478.7,SRC.lygRetail,39879,SRC.lygIncome],
+
+// === 山东16市 ===
+["青岛","QINGDAO","山东",17560.67,SRC.sdStats,6960.7,SRC.qdStats,62738,SRC.sdIncome],
+["济南","JINAN","山东",14210.09,SRC.sdStats,5547.9,SRC.jnStats,56961,SRC.sdIncome],
+["烟台","YANTAI","山东",11350.98,SRC.sdStats,4068.85,SRC.ytStats,53562,SRC.sdIncome],
+    ["潍坊","WEIFANG","山东",8587.36,SRC.wfGDP,3584.9,SRC.wfRetail,45794,SRC.wfIncome],
+["临沂","LINYI","山东",6862.15,SRC.sdStats,3877.5,SRC.lyStats,39180,SRC.sdIncome],
+["济宁","JINING","山东",6128.09,SRC.sdStats,3233.6,SRC.jnStats2,39778,SRC.sdIncome],
+["淄博","ZIBO","山东",5088.89,SRC.sdStats,1712.6,SRC.zbStats,52062,SRC.sdIncome],
+["菏泽","HEZE","山东",4937.4,SRC.sdStats,2035.4,SRC.hzStats,30095,SRC.sdIncome],
+["东营","DONGYING","山东",4502.73,SRC.sdStats,970.92,SRC.dyStats,56838,SRC.sdIncome],
+    ["德州","DEZHOU","山东",4214.61,SRC.sdStats,1617.61,SRC.dzRetail,31792,SRC.sdIncome],
+["威海","WEIHAI","山东",3896.09,SRC.sdStats,1310.5,SRC.whStats,54748,SRC.sdIncome],
+["泰安","TAIAN","山东",3803.48,SRC.sdStats,1342.3,SRC.taStats,41652,SRC.sdIncome],
+    ["滨州","BINZHOU","山东",3558.17,SRC.sdStats,1147.76,SRC.bzRetail,40098,SRC.sdIncome],
+    ["聊城","LIAOCHENG","山东",3304.15,SRC.sdStats,1388.01,SRC.lcRetail,30349,SRC.sdIncome],
+["日照","RIZHAO","山东",2689.96,SRC.sdStats,null,null,37681,SRC.sdIncome],
+["枣庄","ZAOZHUANG","山东",2502.52,SRC.sdStats,null,null,37334,SRC.sdIncome],
+
+// === 浙江11市 ===
+["杭州","HANGZHOU","浙江",23010.9,SRC.zjStats,9499,SRC.china5e,80017,SRC.qqIncome],
+["宁波","NINGBO","浙江",18715.68,SRC.zjStats,5703,SRC.nbStats,77779,SRC.qqIncome],
+["温州","WENZHOU","浙江",10213.92,SRC.zjStats,5143.9,SRC.wzStats,73660,SRC.qqIncome],
+["绍兴","SHAOXING","浙江",8932.13,SRC.zjStats,3255,SRC.sxStats,76732,SRC.qqIncome],
+["嘉兴","JIAXING","浙江",7851.06,SRC.zjStats,2972.14,SRC.jxStats,72086,SRC.qqIncome],
+["金华","JINHUA","浙江",7313.47,SRC.zjStats,4826.5,SRC.jhStats,67877,SRC.net163],
+["台州","TAIZHOU2","浙江",7005.87,SRC.zjStats,3084.34,SRC.tzStats,67795,SRC.net163],
+    ["湖州","HUZHOU","浙江",null,null,1978.0,SRC.huzStats,70521,SRC.net163],
+    ["衢州","QUZHOU","浙江",null,null,null,"",53555,SRC.net163],
+    ["丽水","LISHUI","浙江",null,null,null,"",52979,SRC.net163],
+    ["舟山","ZHOUSHAN","浙江",null,null,null,"",74528,SRC.qqIncome],
+
+// === 四川21市州 ===
+["成都","CHENGDU","四川",24763.61,SRC.scStats,11434.1,SRC.chengduStats,54363,SRC.cdIncome],
+    ["绵阳","MIANYANG","四川",4600.66,SRC.scStats,2003.4,SRC.myRetail,37806,SRC.myIncome],
+    ["宜宾","YIBIN","四川",4134.73,SRC.scStats,1187.63,SRC.ybRetail,36690,SRC.ybIncome],
+    ["泸州","LUZHOU","四川",3004.29,SRC.scStats,1633.5,SRC.lzRetail2,null,""],
+    ["达州","DAZHOU","四川",2990.86,SRC.scStats,1598.9,SRC.dzRetail2,null,""],
+["南充","NANCHONG","四川",2901.76,SRC.scStats,1684.8,SRC.ncRetail,33723,SRC.ncIncome],
+    ["德阳","DEYANG","四川",null,null,null,"",null,""],
+    ["乐山","LESHAN","四川",null,null,null,"",null,""],
+    ["凉山州","LIANGSHAN","四川",null,null,null,"",null,""],
+    ["内江","NEIJIANG","四川",null,null,null,"",null,""],
+    ["眉山","MEISHAN","四川",null,null,null,"",null,""],
+    ["自贡","ZIGONG","四川",null,null,null,"",null,""],
+    ["遂宁","SUINING","四川",null,null,null,"",null,""],
+["广安","GUANGAN","四川",1700.9,SRC.scStats,null,null,null,null],
+    ["广元","GUANGYUAN","四川",null,null,null,"",null,""],
+    ["攀枝花","PANZHIHUA","四川",null,null,null,"",null,""],
+    ["资阳","ZIYANG","四川",null,null,null,"",null,""],
+    ["雅安","YAAN","四川",null,null,null,"",null,""],
+    ["巴中","BAZHONG","四川",null,null,null,"",null,""],
+    ["阿坝州","ABA","四川",null,null,null,"",null,""],
+    ["甘孜州","GANZI","四川",null,null,null,"",null,""],
+
+// === 河南18市 ===
+["郑州","ZHENGZHOU","河南",15244.6,SRC.hnStats,6629.4,SRC.hnStats,48021,SRC.hnStats],
+["洛阳","LUOYANG","河南",6164.5,SRC.hnStats,2475.1,SRC.lyRetail,37240,SRC.hnStats],
+    ["南阳","NANYANG","河南",5167.86,SRC.haStats,2599.76,SRC.nyRetail,32012,SRC.nyIncome],
+    ["许昌","XUCHANG","河南",null,null,null,"",null,""],
+    ["周口","ZHOUKOU","河南",null,null,null,"",null,""],
+    ["新乡","XINXIANG","河南",null,null,null,"",null,""],
+    ["商丘","SHANGQIU","河南",null,null,null,"",null,""],
+    ["信阳","XINYANG","河南",null,null,null,"",null,""],
+    ["驻马店","ZHUMADIAN","河南",null,null,null,"",null,""],
+    ["平顶山","PINGDINGSHAN","河南",null,null,null,"",null,""],
+    ["开封","KAIFENG","河南",null,null,null,"",null,""],
+    ["焦作","JIAOZUO","河南",null,null,null,"",37116,SRC.hnStats],
+    ["安阳","ANYANG","河南",null,SRC.haStats,null,"",null,""],
+    ["濮阳","PUYANG","河南",null,null,null,"",null,""],
+["鹤壁","HEBI","河南",1144.12,SRC.hnStats,null,null,36910,SRC.hnStats],
+    ["三门峡","SANMENXIA","河南",null,null,null,"",null,""],
+    ["漯河","LUOHE","河南",null,null,null,"",null,""],
+    ["济源","JIYUAN","河南",null,null,null,"",39258,SRC.hnStats],
+
+// === 湖北13市州 ===
+["武汉","WUHAN","湖北",22147.35,SRC.hbStats,9013.96,SRC.china5e,62530,SRC.wuhanIncome],
+["宜昌","YICHANG","湖北",6464.42,SRC.euobiz,2376.24,SRC.yc2Stats,42714,SRC.ycIncome],
+    ["襄阳","XIANGYANG","湖北",6113.85,SRC.hbStats,2410.24,SRC.xyRetail,41785,SRC.xyIncome],
+    ["荆州","JINGZHOU","湖北",null,SRC.hbStats,2022.57,SRC.jzStats,38684,SRC.jzIncome],
+    ["十堰","SHIYAN","湖北",null,SRC.hbStats,null,"",33922,SRC.sysIncome],
+    ["黄石","HUANGSHI","湖北",null,SRC.hbStats,null,"",42534,SRC.hsIncome2],
+    ["荆门","JINGMEN","湖北",null,null,null,"",null,""],
+    ["孝感","XIAOGAN","湖北",null,null,null,"",null,""],
+    ["黄冈","HUANGGANG","湖北",null,null,null,"",null,""],
+    ["咸宁","XIANNING","湖北",null,null,null,"",null,""],
+    ["随州","SUIZHOU","湖北",null,null,null,"",null,""],
+    ["恩施州","ENSHI","湖北",null,null,null,"",null,""],
+    ["鄂州","EZHOU","湖北",null,null,null,"",null,""],
+
+// === 湖南14市州 ===
+    ["长沙","CHANGSHA","湖南",15737.82,SRC.csStats,5738.93,SRC.csRetail,66400,SRC.euobiz],
+["岳阳","YUEYANG","湖南",5386.88,SRC.euobiz,1980.05,SRC.yyStats,38534,SRC.yyIncome],
+    ["常德","CHANGDE","湖南",4770.93,SRC.euobiz,1797.8,SRC.cdStats,35630,SRC.cdIncome2],
+    ["衡阳","HENGYANG","湖南",null,SRC.hnStats,null,"",null,""],
+    ["株洲","ZHUZHOU","湖南",null,null,null,"",null,""],
+    ["郴州","CHENZHOU","湖南",null,null,null,"",null,""],
+    ["湘潭","XIANGTAN","湖南",null,null,null,"",null,""],
+    ["永州","YONGZHOU","湖南",null,null,null,"",null,""],
+    ["邵阳","SHAOYANG","湖南",null,null,null,"",null,""],
+    ["益阳","YIYANG","湖南",null,null,null,"",null,""],
+    ["怀化","HUAIHUA","湖南",null,null,null,"",null,""],
+    ["娄底","LOUDI","湖南",null,null,null,"",null,""],
+    ["湘西州","XIANGXI","湖南",null,null,null,"",null,""],
+    ["张家界","ZHANGJIAJIE","湖南",null,null,null,"",null,""],
+
+// === 福建9市 ===
+["福州","FUZHOU","福建",15112.32,SRC.fjStats,5969.1,SRC.fzStats,54007,SRC.fjIncome],
+["泉州","QUANZHOU","福建",13778.34,SRC.fjStats,6416.07,SRC.qzStats,54858,SRC.fjIncome],
+["厦门","XIAMEN","福建",8980.37,SRC.fjStats,3448.6,SRC.fjStats,77762,SRC.qqIncome],
+    ["漳州","ZHANGZHOU","福建",null,null,null,"",43081,SRC.fjIncome],
+    ["宁德","NINGDE","福建",null,null,null,"",null,""],
+    ["莆田","PUTIAN","福建",null,null,null,"",43314,SRC.fjIncome],
+    ["龙岩","LONGYAN","福建",null,null,null,"",41390,SRC.fjIncome],
+    ["三明","SANMING","福建",null,null,null,"",null,""],
+    ["南平","NANPING","福建",null,null,null,"",null,""],
+
+// === 安徽16市 ===
+["合肥","HEFEI","安徽",14210,SRC.ahStats,5320.9,SRC.hfStats,58930,SRC.net163],
+    ["芜湖","WUHU","安徽",5402.7,SRC.ahStats,2120.62,SRC.whRetail,51979,SRC.whIncome],
+    ["滁州","CHUZHOU","安徽",4221.1,SRC.ahStats,1723.9,SRC.czRetail,35867,SRC.czIncome],
+    ["阜阳","FUYANG","安徽",null,null,null,"",null,""],
+    ["安庆","ANQING","安徽",null,null,null,"",null,""],
+    ["马鞍山","MAANSHAN","安徽",null,null,null,"",58205,SRC.net163],
+    ["蚌埠","BENGBU","安徽",null,null,null,"",null,""],
+    ["宿州","SUZHOU2","安徽",null,null,null,"",null,""],
+    ["亳州","BOZHOU","安徽",null,null,null,"",null,""],
+    ["宣城","XUANCHENG","安徽",null,null,null,"",43518,SRC.net163],
+    ["六安","LIUAN","安徽",null,null,null,"",null,""],
+    ["黄山","HUANGSHAN","安徽",null,null,null,"",null,""],
+    ["淮南","HUAINAN","安徽",null,null,null,"",null,""],
+    ["淮北","HUAIBEI","安徽",null,null,null,"",null,""],
+    ["铜陵","TONGLING","安徽",null,null,null,"",null,""],
+    ["池州","CHIZHOU","安徽",null,null,null,"",null,""],
+
+// === 河北11市 ===
+["唐山","TANGSHAN","河北",10450.2,SRC.hebeiStats,2420.9,SRC.tsRetail,47200,SRC.tsIncome],
+["石家庄","SHIJIAZHUANG","河北",8651.7,SRC.hebeiStats,2787.5,SRC.sjzStats,42085,SRC.sjzIncome],
+    ["保定","BAODING","河北",5002.5,SRC.hebStats,1851.2,SRC.bdRetail,35137,SRC.bdIncome],
+["沧州","CANGZHOU","河北",4930.9,SRC.hebeiStats,1321.2,SRC.cangStats,36214,SRC.cangIncome],
+["邯郸","HANDAN","河北",4920.1,SRC.hebeiStats,1475.2,SRC.hdStats,36721,SRC.hdIncome],
+["廊坊","LANGFANG","河北",4040.5,SRC.hebeiStats,1558.7,SRC.lfStats,46222,SRC.lfIncome],
+["邢台","XINGTAI","河北",2800.8,SRC.hebeiStats,null,null,31463,SRC.xtIncome],
+["秦皇岛","QINHUANGDAO","河北",2200.4,SRC.hebeiStats,null,null,38276,SRC.qhdIncome],
+["衡水","HENGSHUI","河北",2011.8,SRC.hebeiStats,null,null,32210,SRC.hsIncome],
+    ["张家口","ZHANGJIAKOU","河北",null,null,null,"",null,""],
+    ["承德","CHENGDE","河北",null,null,null,"",null,""],
+
+// === 陕西10市 ===
+["西安","XIAN","陕西",13902.67,SRC.shaanxiStats,5721.21,SRC.xaStats,47496,SRC.xaIncome],
+    ["榆林","YULIN","陕西",7501.06,SRC.shaanxiStats,1053.95,SRC.ylRetail,35588,SRC.ylIncome2],
+    ["咸阳","XIANYANG","陕西",3104.53,SRC.shaanxiStats,965.74,SRC.xyRetail2,null,""],
+    ["宝鸡","BAOJI","陕西",null,null,null,"",null,""],
+    ["渭南","WEINAN","陕西",null,null,null,"",34950,SRC.wnIncome],
+    ["延安","YANAN","陕西",null,null,null,"",null,""],
+    ["汉中","HANZHONG","陕西",null,null,null,"",null,""],
+    ["安康","ANKANG","陕西",null,null,null,"",null,""],
+    ["商洛","SHANGLUO","陕西",null,null,null,"",null,""],
+    ["铜川","TONGCHUAN","陕西",null,null,null,"",null,""],
+
+// === 江西11市 ===
+    ["南昌","NANCHANG","江西",8141.69,SRC.jiangxiStats,2921.78,SRC.ncStats,51202,SRC.ncIncome],
+["赣州","GANZHOU","江西",5221.3,SRC.euobiz,2352.42,SRC.gzStats,33813,SRC.gzIncome],
+    ["九江","JIUJIANG","江西",4246.5,SRC.jiangxiStats,1788.14,SRC.jjRetail,41822,SRC.jjIncome],
+    ["宜春","YICHUN","江西",null,null,null,"",null,""],
+    ["吉安","JIAN","江西",null,null,null,"",null,""],
+    ["上饶","SHANGRAO","江西",null,null,null,"",null,""],
+    ["抚州","FUZHOU2","江西",null,null,null,"",null,""],
+    ["萍乡","PINGXIANG","江西",null,null,null,"",null,""],
+    ["景德镇","JINGDEZHEN","江西",null,null,null,"",null,""],
+    ["新余","XINYU","江西",null,null,null,"",null,""],
+    ["鹰潭","YINGTAN","江西",null,null,null,"",null,""],
+
+// === 辽宁14市 ===
+    ["大连","DALIAN","辽宁",10002.1,SRC.lnStats,2180.8,SRC.dlStats,52007,SRC.dlIncome],
+    ["沈阳","SHENYANG","辽宁",9100.33,SRC.lnStats,4195.4,SRC.syRetail,51827,SRC.syIncome],
+["鞍山","ANSHAN","辽宁",2180.4,SRC.euobiz,null,null,null,null],
+    ["营口","YINGKOU","辽宁",null,null,null,"",null,""],
+    ["盘锦","PANJIN","辽宁",null,null,null,"",null,""],
+    ["锦州","JINZHOU","辽宁",null,null,null,"",null,""],
+    ["丹东","DANDONG","辽宁",null,null,null,"",null,""],
+    ["抚顺","FUSHUN","辽宁",null,null,null,"",null,""],
+    ["本溪","BENXI","辽宁",null,null,null,"",null,""],
+    ["铁岭","TIELING","辽宁",null,null,null,"",null,""],
+    ["辽阳","LIAOYANG","辽宁",null,null,null,"",null,""],
+    ["阜新","FUXIN","辽宁",null,null,null,"",null,""],
+    ["朝阳","CHAOYANG","辽宁",null,null,null,"",null,""],
+    ["葫芦岛","HULUDAO","辽宁",null,null,null,"",null,""],
+
+// === 云南16市州 ===
+    ["昆明","KUNMING","云南",8637.45,SRC.ynStats,3817.69,SRC.kmRetail,48754,SRC.kmIncome],
+    ["曲靖","QUJING","云南",3777.6,SRC.ynStats,1357.32,SRC.qjRetail,33224,SRC.qjIncome],
+    ["红河州","HONGHE","云南",3154.52,SRC.ynStats,1200.29,SRC.hhRetail,31054,SRC.hhIncome],
+    ["玉溪","YUXI","云南",null,null,null,"",null,""],
+    ["楚雄州","CHUXIONG","云南",null,null,null,"",null,""],
+    ["大理州","DALI","云南",null,null,null,"",null,""],
+    ["文山州","WENSHAN","云南",null,null,null,"",null,""],
+    ["普洱","PUER","云南",null,null,null,"",null,""],
+    ["保山","BAOSHAN","云南",null,null,null,"",null,""],
+    ["昭通","ZHAOTONG","云南",null,null,null,"",null,""],
+    ["临沧","LINCANG","云南",null,null,null,"",null,""],
+    ["丽江","LIJIANG","云南",null,null,null,"",null,""],
+    ["德宏州","DEHONG","云南",null,null,null,"",null,""],
+    ["西双版纳","XISHUANGBANNA","云南",null,null,null,"",null,""],
+    ["迪庆州","DIQING","云南",null,null,null,"",null,""],
+    ["怒江州","NUJIANG","云南",null,null,null,"",null,""],
+
+// === 广西14市 ===
+    ["南宁","NANNING","广西",6212.46,SRC.gxStats,2186.7,SRC.nnRetail,39659,SRC.nnIncome],
+["柳州","LIUZHOU","广西",3096.91,SRC.euobiz,null,null,39412,SRC.liuzhouIncome],
+["桂林","GUILIN","广西",2579.53,SRC.euobiz,null,null,null,null],
+    ["玉林","YULIN2","广西",null,null,null,"",null,""],
+    ["梧州","WUZHOU","广西",null,null,null,"",null,""],
+    ["钦州","QINZHOU","广西",null,null,null,"",null,""],
+    ["贵港","GUIGANG","广西",null,null,null,"",null,""],
+    ["百色","BAISE","广西",null,null,null,"",null,""],
+    ["北海","BEIHAI","广西",null,null,null,"",null,""],
+    ["河池","HECHI","广西",null,null,null,"",null,""],
+    ["来宾","LAIBIN","广西",null,null,null,"",null,""],
+    ["贺州","HEZHOU","广西",null,null,null,"",null,""],
+    ["崇左","CHONGZUO","广西",null,null,null,"",null,""],
+    ["防城港","FANGCHENGGANG","广西",null,null,null,"",null,""],
+
+// === 内蒙古12市盟 ===
+    ["鄂尔多斯","EERDUOSI","内蒙古",6122.21,SRC.nmgStat,698,SRC.eedsRetail,55914,SRC.eedsIncome],
+["包头","BAOTOU","内蒙古",4711.92,SRC.euobiz,939.5,SRC.btStats,59067,SRC.btIncome],
+    ["呼和浩特","HUHEHAOTE","内蒙古",4278.27,SRC.euobiz,1125.3,SRC.hhStat,51189,SRC.hhhtIncome],
+    ["赤峰","CHIFENG","内蒙古",null,null,null,"",null,""],
+    ["通辽","TONGLIAO","内蒙古",null,null,null,"",null,""],
+    ["呼伦贝尔","HULUNBEIER","内蒙古",null,null,null,"",null,""],
+    ["巴彦淖尔","BAYANNAOER","内蒙古",null,null,null,"",null,""],
+    ["乌兰察布","WULANCHABU","内蒙古",null,null,null,"",null,""],
+    ["乌海","WUHAI","内蒙古",null,null,null,"",null,""],
+    ["兴安盟","XINGANMENG","内蒙古",null,null,null,"",null,""],
+    ["锡林郭勒盟","XILINGUOLEMENG","内蒙古",null,null,null,"",null,""],
+    ["阿拉善盟","ALASHANMENG","内蒙古",null,null,null,"",null,""],
+
+// === 山西11市 ===
+    ["太原","TAIYUAN","山西",5382.45,SRC.sx2Stats,2365.53,SRC.tyRetail,46446,SRC.tyIncome],
+["吕梁","LVLIANG","山西",2575,SRC.euobiz,null,null,null,null],
+["长治","CHANGZHI","山西",2558.3,SRC.euobiz,null,null,null,null],
+    ["晋城","JINCHENG","山西",null,null,null,"",null,""],
+    ["运城","YUNCHENG","山西",null,null,null,"",null,""],
+    ["临汾","LINFEN","山西",null,null,null,"",null,""],
+    ["大同","DATONG","山西",null,null,null,"",null,""],
+    ["晋中","JINZHONG","山西",null,null,null,"",null,""],
+    ["朔州","SHUOZHOU","山西",null,null,null,"",null,""],
+    ["忻州","XINZHOU","山西",null,null,null,"",null,""],
+    ["阳泉","YANGQUAN","山西",null,null,null,"",null,""],
+
+// === 贵州9市州 ===
+    ["贵阳","GUIYANG","贵州",6038.15,SRC.guizhouStats,2576.34,SRC.gyStats,47922,SRC.gyIncome],
+    ["遵义","ZUNYI","贵州",5206.12,SRC.euobiz,null,"",35548,SRC.zyIncome],
+["毕节","BIJIE","贵州",2541.14,SRC.euobiz,null,null,null,null],
+    ["黔南州","QIANNAN","贵州",null,null,null,"",null,""],
+    ["黔东南州","QIANDONGNAN","贵州",null,null,null,"",null,""],
+    ["铜仁","TONGREN","贵州",null,null,null,"",null,""],
+    ["六盘水","LIUPANSHUI","贵州",null,null,null,"",null,""],
+    ["安顺","ANSHUN","贵州",null,null,null,"",null,""],
+    ["黔西南州","QIANXINAN","贵州",null,null,null,"",null,""],
+
+// === 新疆14市州地盟 ===
+    ["乌鲁木齐","WULUMUQI","新疆",4658.19,SRC.xjStats,1174.48,SRC.wlmqRetail,54019,SRC.wlmqIncome],
+["昌吉州","CHANGJI","新疆",2637.67,SRC.euobiz,null,null,null,null],
+["阿克苏","AKESU","新疆",2042.98,SRC.euobiz,null,null,null,null],
+    ["伊犁州","YILI","新疆",null,null,null,"",null,""],
+    ["喀什","KASHI","新疆",null,null,null,"",null,""],
+    ["和田","HETIAN","新疆",null,null,null,"",null,""],
+    ["塔城","TACHENG","新疆",null,null,null,"",null,""],
+    ["阿勒泰","ALETAI","新疆",null,null,null,"",null,""],
+    ["吐鲁番","TURPAN","新疆",null,null,null,"",null,""],
+    ["哈密","HAMI","新疆",null,null,null,"",null,""],
+    ["博州","BOZHOU","新疆",null,null,null,"",null,""],
+    ["克州","KEZHOU","新疆",null,null,null,"",null,""],
+    ["克拉玛依","KELAMAYI","新疆",null,null,null,"",63700,SRC.euobiz],
+    ["石河子","SHIHEZI","新疆",null,null,null,"",null,""],
+
+// === 黑龙江13市地 ===
+    ["哈尔滨","HARBIN","黑龙江",6188.5,SRC.hljStat,2557.7,SRC.hrbRetail,39817,SRC.hrbIncome],
+["大庆","DAQING","黑龙江",2693.2,SRC.euobiz,null,null,null,null],
+["齐齐哈尔","QIQIHAER","黑龙江",1402.1,SRC.euobiz,null,null,null,null],
+    ["绥化","SUIHUA","黑龙江",null,null,null,"",null,""],
+    ["牡丹江","MUDANJIANG","黑龙江",null,null,null,"",null,""],
+    ["佳木斯","JIAMUSI","黑龙江",null,null,null,"",null,""],
+    ["鸡西","JIXI","黑龙江",null,null,null,"",null,""],
+    ["鹤岗","HEGANG","黑龙江",null,null,null,"",null,""],
+    ["双鸭山","SHUANGYASHAN","黑龙江",null,null,null,"",null,""],
+    ["伊春","YICHUN2","黑龙江",null,null,null,"",null,""],
+    ["七台河","QITAIHE","黑龙江",null,null,null,"",null,""],
+    ["黑河","HEIHE","黑龙江",null,null,null,"",null,""],
+    ["大兴安岭","DAXINGANLING","黑龙江",null,null,null,"",null,""],
+
+// === 吉林9市州 ===
+    ["长春","CHANGCHUN","吉林",8005.59,SRC.jlStats,2551.17,SRC.ccRetail,40200,SRC.euobiz],
+["吉林市","JILIN","吉林",1702.32,SRC.euobiz,null,null,null,null],
+["延边州","YANBIAN","吉林",1064.08,SRC.euobiz,null,null,null,null],
+    ["松原","SONGYUAN","吉林",null,null,null,"",null,""],
+    ["通化","TONGHUA","吉林",null,null,null,"",null,""],
+    ["白城","BAICHENG","吉林",null,null,null,"",null,""],
+    ["四平","SIPING","吉林",null,null,null,"",null,""],
+    ["辽源","LIAOYUAN","吉林",null,null,null,"",null,""],
+    ["白山","BAISHAN","吉林",null,null,null,"",null,""],
+
+// === 甘肃14市州 ===
+    ["兰州","LANZHOU","甘肃",3903.6,SRC.gsStats,1474.3,SRC.lzRetail,48390,SRC.lzIncome],
+["庆阳","QINGYANG","甘肃",1235.32,SRC.euobiz,null,null,null,null],
+["酒泉","JIUQUAN","甘肃",1103.6,SRC.euobiz,null,null,null,null],
+    ["天水","TIANSHUI","甘肃",null,null,null,"",null,""],
+    ["白银","BAIYIN","甘肃",null,null,null,"",null,""],
+    ["平凉","PINGLIANG","甘肃",null,null,null,"",null,""],
+    ["定西","DINGXI","甘肃",null,null,null,"",null,""],
+    ["武威","WUWEI","甘肃",null,null,null,"",null,""],
+    ["张掖","ZHANGYE","甘肃",null,null,null,"",null,""],
+    ["陇南","LONGNAN","甘肃",null,null,null,"",null,""],
+    ["嘉峪关","JIAYUGUAN","甘肃",null,null,null,"",null,""],
+    ["金昌","JINCHANG","甘肃",null,null,null,"",null,""],
+    ["临夏州","LINXIA","甘肃",null,null,null,"",null,""],
+    ["甘南州","GANNAN","甘肃",null,null,null,"",null,""],
+
+// === 海南4市 ===
+["海口","HAIKOU","海南",2562.85,SRC.hiStats,null,null,null,null],
+["三亚","SANYA","海南",1033.88,SRC.euobiz,null,null,null,null],
+["儋州","DANZHOU","海南",1030.34,SRC.euobiz,null,null,null,null],
+    ["三沙","SANSHA","海南",null,null,null,"",null,""],
+
+// === 宁夏5市 ===
+    ["银川","YINCHUAN","宁夏",3033.52,SRC.nxStats,844.28,SRC.ycRetail,45876,SRC.ycIncome2],
+["吴忠","WUZHONG","宁夏",961.67,SRC.euobiz,null,null,null,null],
+["中卫","ZHONGWEI","宁夏",633.38,SRC.euobiz,null,null,null,null],
+    ["石嘴山","SHIZUISHAN","宁夏",null,null,null,"",null,""],
+    ["固原","GUYUAN","宁夏",null,null,null,"",null,""],
+
+// === 青海8市州 ===
+["西宁","XINING","青海",1914.77,SRC.qhStats,null,null,null,null],
+["海西州","HAIXI","青海",917.29,SRC.euobiz,null,null,null,null],
+["海东","HAIDONG","青海",615.77,SRC.euobiz,null,null,null,null],
+    ["海南州","HAINAN2","青海",null,null,null,"",null,""],
+    ["海北州","HAIBEI","青海",null,null,null,"",null,""],
+    ["黄南州","HUANGNAN","青海",null,null,null,"",null,""],
+    ["果洛州","GUOLUO","青海",null,null,null,"",null,""],
+    ["玉树州","YUSHU","青海",null,null,null,"",null,""],
+
+// === 西藏7市地 ===
+["拉萨","LASA","西藏",1090.99,SRC.xizangStats,null,null,null,null],
+["日喀则","RIKAZE","西藏",509.87,SRC.euobiz,null,null,null,null],
+["昌都","CHANGDU","西藏",424.86,SRC.euobiz,null,null,null,null],
+    ["林芝","LINZHI","西藏",null,null,null,"",null,""],
+    ["山南","SHANNAN","西藏",null,null,null,"",null,""],
+    ["那曲","NAQU","西藏",null,null,null,"",null,""],
+    ["阿里地区","ALI","西藏",null,null,null,"",null,""],
+];
+
+// 排序和状态
+let currentSort = { key: 'gdp', desc: true };
+let currentLetter = '';
+let currentSearch = '';
+
+// 字母筛选
+function initLetterFilter() {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const container = document.getElementById('letterFilter');
+  letters.forEach(l => {
+    const btn = document.createElement('button');
+    btn.textContent = l;
+    btn.onclick = () => {
+      if (currentLetter === l) { currentLetter = ''; btn.classList.remove('active'); }
+      else { currentLetter = l; document.querySelectorAll('.letter-filter button').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+      renderTable();
+    };
+    container.appendChild(btn);
+  });
+}
+
+function filterData() {
+  currentSearch = document.getElementById('searchInput').value.toUpperCase().trim();
+  renderTable();
+}
+
+function sortBy(key) {
+  if (currentSort.key === key) { currentSort.desc = !currentSort.desc; }
+  else { currentSort.key = key; currentSort.desc = true; }
+  renderTable();
+}
+
+function sortData() {
+  const val = document.getElementById('sortSelect').value;
+  const [key, dir] = val.split('-');
+  currentSort.key = key;
+  currentSort.desc = dir === 'desc';
+  renderTable();
+}
+
+function getVal(city, key) {
+  if (key === 'gdp') return city[3] || 0;
+  if (key === 'retail') return city[5] || 0;
+  if (key === 'income') return city[7] || 0;
+  if (key === 'pinyin') return city[1];
+  if (key === 'province') return city[2];
+  return 0;
+}
+
+function renderTable() {
+  let filtered = cityData.slice();
+
+  // 搜索过滤
+  if (currentSearch) {
+    filtered = filtered.filter(c => {
+      const py = c[1];
+      const name = c[0];
+      return py.includes(currentSearch) || py.startsWith(currentSearch) ||
+             name.includes(currentSearch) || name.includes(document.getElementById('searchInput').value.trim());
+    });
+  }
+
+  // 字母过滤
+  if (currentLetter) {
+    filtered = filtered.filter(c => c[1].startsWith(currentLetter));
+  }
+
+  // 排序
+  filtered.sort((a, b) => {
+    let va = getVal(a, currentSort.key);
+    let vb = getVal(b, currentSort.key);
+    if (typeof va === 'string' && typeof vb === 'string') {
+      return currentSort.desc ? vb.localeCompare(va) : va.localeCompare(vb);
+    }
+    return currentSort.desc ? (vb || 0) - (va || 0) : (va || 0) - (vb || 0);
+  });
+
+  // 渲染
+  const tbody = document.getElementById('tableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-results">未找到匹配的城市，请尝试其他搜索词</td></tr>';
+    return;
+  }
+
+  let html = '';
+  filtered.forEach((c, i) => {
+    const rank = i + 1;
+    let rowClass = '';
+    if (currentSort.key === 'gdp' && c[3]) {
+      if (rank === 1) rowClass = 'rank-1';
+      else if (rank === 2) rowClass = 'rank-2';
+      else if (rank === 3) rowClass = 'rank-3';
+      else if (rank <= 10) rowClass = 'rank-top10';
+    }
+
+    const gdp = c[3] ? `<span class="data-value gdp">${c[3].toLocaleString()}</span>${srcLink(c[4])}` : '<span class="data-na">暂未公布</span>';
+    const retail = c[5] ? `<span class="data-value retail">${c[5].toLocaleString()}</span>${srcLink(c[6])}` : '<span class="data-na">暂未公布</span>';
+    const income = c[7] ? `<span class="data-value income">${c[7].toLocaleString()}</span>${srcLink(c[8])}` : '<span class="data-na">暂未公布</span>';
+
+    html += `<tr class="${rowClass}">
+      <td class="rank-cell">${rank}</td>
+      <td><div class="city-name">${c[0]}</div><div style="font-size:11px;color:#999;margin-top:2px">${c[1]}</div></td>
+      <td><span class="province-tag">${c[2]}</span></td>
+      <td>${gdp}</td>
+      <td>${retail}</td>
+      <td>${income}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+
+  // 更新统计
+  updateStats();
+}
+
+function updateStats() {
+  const total = cityData.length;
+  const gdpCount = cityData.filter(c => c[3]).length;
+  const retailCount = cityData.filter(c => c[5]).length;
+  const incomeCount = cityData.filter(c => c[7]).length;
+  const totalGDP = cityData.filter(c => c[3]).reduce((s, c) => s + c[3], 0);
+  const wanYiCities = cityData.filter(c => c[3] && c[3] >= 10000).length;
+
+  document.getElementById('statsBar').innerHTML = `
+    <span class="stat">收录城市 <b>${total}</b></span>
+    <span class="stat">GDP数据 <b>${gdpCount}</b>城</span>
+    <span class="stat">社零数据 <b>${retailCount}</b>城</span>
+    <span class="stat">人均收入 <b>${incomeCount}</b>城</span>
+    <span class="stat">万亿GDP城市 <b>${wanYiCities}</b></span>
+    <span class="stat">GDP合计 <b>${(totalGDP/10000).toFixed(2)}</b>万亿</span>
+  `;
+}
+
+// 初始化
+initLetterFilter();
+renderTable();
+</script>
+</body>
+</html>
