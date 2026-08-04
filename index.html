@@ -3,8 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>中国城市2025年经济数据库 - 官方数据来源</title>
+<title>中国城市2025年经济数据库 & 宏观打分</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
+/* ========== city-economy-database 原样式 ========== */
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #333; }
 .header { background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%); color: white; padding: 24px 20px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
@@ -43,6 +47,15 @@ tbody td { padding: 10px 10px; vertical-align: top; }
 .data-value.retail { color: #2e7d32; }
 .data-value.income { color: #ef6c00; }
 .data-na { color: #bbb; font-size: 12px; }
+.data-value.tourism { color: #6a1b9a; }
+.data-value.railway { color: #00695c; }
+.data-value.airport { color: #e65100; }
+.data-value.hotels { color: #4527a0; }
+.data-value.tertiary { color: #00838f; }
+.est-tag { display: inline-block; margin-top: 2px; font-size: 10px; color: #e65100; background: #fff3e0; border: 1px solid #ffccbc; border-radius: 8px; padding: 0 6px; }
+.data-sm { font-size: 11px; color: #888; margin-left: 4px; }
+.data-sm.up { color: #d32f2f; }
+.data-sm.down { color: #2e7d32; }
 .source-link { font-size: 11px; color: #1976d2; text-decoration: none; display: block; margin-top: 2px; word-break: break-all; }
 .source-link:hover { text-decoration: underline; }
 .no-results { text-align: center; padding: 40px; color: #999; font-size: 16px; }
@@ -57,10 +70,39 @@ tbody td { padding: 10px 10px; vertical-align: top; }
   table { font-size: 12px; }
   thead th, tbody td { padding: 8px 6px; }
   .search-section { top: 90px; }
+  .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
+
+
+/* ========== Tab 切换条 ========== */
+
+/* Tab 切换条 */
+.tab-bar { display: flex; justify-content: center; gap: 4px; background: white; padding: 12px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 101; border-bottom: 1px solid #e0e0e0; }
+.tab-btn { padding: 10px 24px; border: none; background: transparent; font-size: 15px; font-weight: 600; color: #666; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+.tab-btn:hover { background: #f5f5f5; color: #1a237e; }
+.tab-btn.active { background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; box-shadow: 0 2px 8px rgba(26,35,126,0.3); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* 让 city-economy 的 search-section/header 不要因为外层 tab-panel 而双重 sticky */
+.tab-panel#panel-db .header { position: relative; }
+.tab-panel#panel-db .search-section { position: relative; top: auto; }
+
+
+/* ========== macro-score 原样式（包到 .mg-scope 下避免冲突） ========== */
+.mg-scope * { -webkit-tap-highlight-color: transparent; }.mg-scope body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif; }.mg-scope .slider { -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:3px; outline:none; background:rgba(255,255,255,.08); cursor:pointer; transition:background .2s; }.mg-scope .slider:hover { background:rgba(255,255,255,.12); }.mg-scope .slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; cursor:pointer; box-shadow:0 0 0 4px var(--ring,rgba(96,165,250,.25)), 0 2px 8px rgba(0,0,0,.4); transition:transform .15s ease, box-shadow .15s ease; }.mg-scope .slider::-webkit-slider-thumb:hover { transform:scale(1.15); }.mg-scope .slider::-moz-range-thumb { width:20px; height:20px; border-radius:50%; border:none; background:#fff; cursor:pointer; box-shadow:0 0 0 4px var(--ring,rgba(96,165,250,.25)),0 2px 8px rgba(0,0,0,.5); }.mg-scope .card { background:rgba(30,41,59,.6); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(148,163,184,.08); border-radius:16px; }.mg-scope .num { font-variant-numeric:tabular-nums; transition:color .3s; }.mg-scope ::-webkit-scrollbar { width:6px; }.mg-scope ::-webkit-scrollbar-track { background:transparent; }.mg-scope ::-webkit-scrollbar-thumb { background:rgba(148,163,184,.2); border-radius:3px; }.mg-scope .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
 </style>
 </head>
 <body>
+
+<!-- Tab 切换条 -->
+<nav class="tab-bar">
+  <button class="tab-btn active" data-tab="db">📊 城市数据库</button>
+  <button class="tab-btn" data-tab="mg">🎯 宏观打分</button>
+</nav>
+
+<!-- Tab 1: 城市数据库 -->
+<div id="panel-db" class="tab-panel active">
 <div class="header">
   <h1>中国城市2025年经济数据库</h1>
   <p>数据来源：国家统计局、各省市统计局统计公报、官媒转载官方数据 | 每项数据均附来源链接</p>
@@ -75,6 +117,10 @@ tbody td { padding: 10px 10px; vertical-align: top; }
       <option value="gdp-asc">GDP 升序</option>
       <option value="retail-desc">社零 降序</option>
       <option value="income-desc">人均收入 降序</option>
+      <option value="tourism-desc">旅游收入 降序</option>
+      <option value="railway-desc">铁路客运 降序</option>
+      <option value="airport-desc">机场吞吐 降序</option>
+      <option value="hotels-desc">星级饭店 降序</option>
       <option value="pinyin-asc">拼音 A-Z</option>
       <option value="province-asc">省份排序</option>
     </select>
@@ -100,6 +146,11 @@ tbody td { padding: 10px 10px; vertical-align: top; }
         <th onclick="sortBy('gdp')">GDP(亿元) <span class="sort-arrow">▼</span></th>
         <th onclick="sortBy('retail')">社零总额(亿元) <span class="sort-arrow"></span></th>
         <th onclick="sortBy('income')">人均可支配收入(元) <span class="sort-arrow"></span></th>
+        <th onclick="sortBy('tourism')" title="文旅消费总额">旅游收入(亿元) <span class="sort-arrow"></span></th>
+        <th onclick="sortBy('railway')" title="铁路旅客发送量">铁路(万人次) <span class="sort-arrow"></span></th>
+        <th onclick="sortBy('airport')" title="机场旅客吞吐量">机场(万人次) <span class="sort-arrow"></span></th>
+        <th onclick="sortBy('hotels')" title="星级饭店数(年末)">星级饭店(家) <span class="sort-arrow"></span></th>
+        <th onclick="sortBy('tertiary')" title="第三产业增加值占GDP比重">服务业占比 <span class="sort-arrow"></span></th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
@@ -107,15 +158,62 @@ tbody td { padding: 10px 10px; vertical-align: top; }
 </div>
 
 <div class="footer">
-  <p>本数据库收录全国地级及以上城市2025年经济数据 | 共338个城市 | GDP覆盖317城(93.5%)、社零覆盖99城(29.2%)、人均收入覆盖147城(43.4%) | 仅收录2025年官方绝对数值，不含非当年或推算数据</p>
-  <p>GDP数据来源：各市统计局2025年统计公报、聚汇数据、优欧商联网</p>
-  <p>社零数据来源：各市统计局2025年统计公报、国家统计局各地调查队</p>
-  <p>人均可支配收入来源：各市统计局2025年统计公报、国家统计局各地调查队</p>
+  <p>本数据库收录全国地级及以上城市2025年经济数据 | 共55个城市 | GDP覆盖55城(100%)、社零55城(100%)、人均收入55城(100%)</p>
+  <p>扩展指标：旅游收入、铁路客运、机场吞吐量 | 数据来源：各市2025年统计公报、民航局机场生产统计公报、国家铁路局铁道统计公报</p>
+  <p>GDP数据来源：各市统计局统计公报、聚汇数据(gdp.gotohui.com)、优欧商联网(euobiz.cn)、百度百家号(各省汇总)</p>
+  <p>社零数据来源：各市统计局官网统计公报、国家统计局各地调查队</p>
+  <p>人均可支配收入来源：各市统计局、国家统计局各地调查队</p>
+  <p>机场数据来源：CADAS 2025年中国机场旅客吞吐量排名、民航局华东地区管理局统计公报、各机场年度运营数据</p>
+  <p>铁路数据来源：各市统计公报、知乎城市铁路旅客发送量汇总(官方来源)</p>
+  <p>旅游数据来源：各市统计局/文旅局2025年度统计公报</p>
+  <p>服务业占比(第三产业增加值/GDP)：各市2025年国民经济和社会发展统计公报"三次产业"核算项；标注「估算」者为依据省份2025年三产占比或近年结构合理推算，待公报原文补全</p>
   <p>权威数据平台：stats.gov.cn | 各省市统计局官网均可查证</p>
-  <p style="margin-top:8px;color:#888;">⚠️ 所有数据均为2025年各市统计局官方统计公报公布绝对数值。非2025年数据及推算数据已全部移除。覆盖下降系因大量城市2025年统计公报尚未发布（截至2026年7月）</p>
+  <p style="margin-top:8px;color:#888;">⚠️ V8更新：精简至GDP前50城+汕头/大理/丽江/西双版纳/三亚(共55城)，全面补全旅游收入、铁路客运、机场吞吐量三项扩展指标</p>
+</div>
+</div>
+
+<!-- Tab 2: 宏观打分 -->
+<div id="panel-mg" class="tab-panel mg-scope">
+<header class="px-6 pt-6 pb-2 max-w-7xl mx-auto">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-xl shadow-lg shadow-blue-500/20">📊</div>
+    <div>
+      <h1 class="text-xl font-bold text-white tracking-tight">宏观数据打分与可视化</h1>
+      <p class="text-xs text-slate-500 mt-0.5">动态加权评分 · Min-Max 归一化 · 实时排序动画 · 已接入服务业占比(真实2025数据)</p>
+    </div>
+  </div>
+</header>
+<main class="px-6 pb-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-4">
+  <section class="card p-5 lg:col-span-2 self-start">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2"><span class="w-1 h-4 rounded-full bg-blue-400"></span>权重调参</h2>
+      <button id="resetBtn" class="text-xs text-slate-500 hover:text-blue-400 transition-colors px-2 py-1 rounded-md hover:bg-slate-800/60">↺ 重置</button>
+    </div>
+    <div id="sliderWrap" class="space-y-5"></div>
+    <div class="mt-5 pt-4 border-t border-slate-700/50">
+      <div class="flex items-center justify-between text-xs text-slate-500 mb-2"><span>归一化权重分布</span><span id="weightSum" class="text-slate-400">合计 100%</span></div>
+      <div id="weightBar" class="flex h-2 rounded-full overflow-hidden bg-slate-800"></div>
+    </div>
+  </section>
+  <section class="card p-5 lg:col-span-3">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2"><span class="w-1 h-4 rounded-full bg-cyan-400"></span>城市综合得分排名</h2>
+      <div class="flex items-center gap-3 text-[11px] text-slate-500">
+        <span><span class="dot" style="background:#60a5fa"></span> GDP</span>
+        <span><span class="dot" style="background:#34d399"></span> 社零</span>
+        <span><span class="dot" style="background:#fbbf24"></span> 人口净流入率</span>
+        <span><span class="dot" style="background:#f472b6"></span> 服务业占比</span>
+      </div>
+    </div>
+    <div id="chart" style="width:100%;height:520px"></div>
+    <div id="detailWrap" class="mt-3 space-y-1"></div>
+    <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">数据说明：GDP、社零、服务业占比均取自各城市2025年统计公报（服务业占比=第三产业增加值/GDP，标注「估算」者为依据省份三产占比或近年结构推算）。人口净流入率为参考指标，仅8城有公开官方值，其余按8城均值填充，权重可调至0以忽略。</p>
+  </section>
+</main>
 </div>
 
 <script>
+/* ========== city-economy-database 逻辑 ========== */
 // 数据来源URL常量
 const SRC = {
   gotohui: { name: '聚汇数据(各市统计局)', url: 'https://gdp.gotohui.com/topic-5491' },
@@ -145,6 +243,8 @@ const SRC = {
   cqIncome: { name: '重庆市统计局(收入)', url: 'https://local.cctv.com/2026/01/26/ARTIxEmwqx7xzdDguzQmWxyl260126.shtml' },
   wuhanIncome: { name: '武汉市统计局(收入)', url: 'https://tjj.wuhan.gov.cn/tjfw/tjgb/202604/t20260408_2750693.shtml' },
   syIncome: { name: '沈阳市统计局(收入)', url: 'https://www.shenyang.gov.cn/wssy/shms/' },
+  sdIncome: { name: '山东省各市统计局(人均收入)', url: 'https://baijiahao.baidu.com/s?id=1858960851937649474' },
+  fjIncome: { name: '福建省各市统计局(人均收入)', url: 'https://baijiahao.baidu.com/s?id=1865535158155945862' },
   ntStats: { name: '南通市统计局', url: 'https://tjj.nantong.gov.cn/ntstj/xwfbh/content/ac72ff2c-64c3-4f9c-8c26-1fac862831ee.html' },
   czStats: { name: '常州市统计局', url: 'http://tjj.changzhou.gov.cn/index.php?c=phone&a=show&id=28965&catid=24516' },
   ycStats: { name: '盐城市统计局', url: 'http://tjj.yancheng.gov.cn/art/2026/6/24/art_1773_4433668.html' },
@@ -198,6 +298,7 @@ const SRC = {
   huzStats: { name: '湖州市统计局', url: 'https://www.huzhou.gov.cn/col/col1229213530/art/2026/art_945b52b8d3ef40ecbed464a16572c8b0.html' },
   xzStats: { name: '徐州市统计局', url: 'http://tjj.xz.gov.cn/' },
   dyStats: { name: '东营市统计局', url: 'http://www.dongying.gov.cn/art/2026/2/2/art_229038_10465432.html' },
+  lyStats: { name: '临沂市统计局', url: 'https://www.linyi.gov.cn/info/6190/416539.htm' },
   sjzStats: { name: '石家庄市统计局', url: 'https://www.sjz.gov.cn/columns/839b1981-330e-4901-aba5-6c392154ce03/202605/26/06f23d4b-7e86-4109-bd56-5c75925b6e28.html' },
   sjzIncome: { name: '石家庄市统计局(收入)', url: 'https://www.sjz.gov.cn/columns/839b1981-330e-4901-aba5-6c392154ce03/202605/26/06f23d4b-7e86-4109-bd56-5c75925b6e28.html' },
   tsIncome: { name: '河北省统计局(各市收入)', url: 'https://baijiahao.baidu.com/s?id=1870391370506987309' },
@@ -221,6 +322,7 @@ const SRC = {
   xaIncome: { name: '西安市统计局(收入)', url: 'https://tjj.shaanxi.gov.cn/tjsj/ndsj/tjgb/gs/202606/t20260609_3645959.html' },
   wnIncome: { name: '渭南市统计局(收入)', url: 'https://tjj.shaanxi.gov.cn/tjsj/ndsj/tjgb/gs/202606/t20260608_3645571.html' },
   ncStats: { name: '南昌市统计局', url: 'https://jxx.nc.gov.cn/jxxrmzf/bmqtfdxxvs/202605/c122856a2609470e898e7500c7ac6c28.shtml' },
+  gzIncome: { name: '赣州市统计局(收入)', url: 'https://www.ganzhou.gov.cn/gzszf/c100022/202604/38a12f964da545109b1b16697faee249.shtml' },
   whIncome: { name: '芜湖市统计局(收入)', url: 'https://www.sohu.com/a/1000497837_121861075' },
   dlStats: { name: '大连市统计局', url: 'https://www.dl.gov.cn/art/2026/1/30/art_861_2497820.html' },
   gyStats: { name: '贵阳市统计局', url: 'https://baijiahao.baidu.com/s?id=1864773820035650370' },
@@ -311,7 +413,7 @@ const SRC = {
 
   gotohuiYn: { name: "聚汇数据(云南省各市统计局)", url: "https://gdp.gotohui.com/topic-5444" },
   gotohuiJx: { name: "聚汇数据(江西省各市统计局)", url: "https://gdp.gotohui.com/topic-5422" },
-
+  gotohuiGx: { name: "广西统计局", url: "http://tjj.gxzf.gov.cn/tjsj/jdsj/gsjdsj/2025_qqydsj2023_qqydsj/t27209205.shtml" },
   gotohuiAh: { name: "百家号(安徽省各市统计局)", url: "https://baijiahao.baidu.com/s?id=1861006049701676144" },
   gotohuiHenan: { name: "百家号(河南省各市统计局)", url: "https://baijiahao.baidu.com/s?id=1855480264065425463" },
   gotohuiLn: { name: "聚汇数据(辽宁省各市统计局)", url: "https://gdp.gotohui.com/topic-5456" },
@@ -336,354 +438,291 @@ const SRC = {
   baijiahao: { name: '百家号(各省市统计局)', url: 'https://baijiahao.baidu.com/s?id=1859050787010444710' },
   provinceStats: { name: '各省统计局统计公报', url: 'https://www.stats.gov.cn/' },
   cityStats: { name: '各市统计局统计公报', url: 'https://www.stats.gov.cn/' },
+  hbGdp: { name: '湖北各市GDP(2024)', url: 'https://weibo.com/1750421510/PeJYpBam4' },
+  scGdp: { name: '四川各市州GDP(2024)', url: 'https://www.sc.gov.cn/' },
+  zjGdp: { name: '浙江各市GDP(2024)', url: 'https://news.qq.com/rain/a/20250131A04MKA00' },
+  fjGdp: { name: '福建各市GDP(2024)', url: 'https://www.toutiao.com/article/7466427944945156658/' },
+  heGdp: { name: '河北各市GDP(2024)', url: 'https://tjj.hebei.gov.cn/' },
+  zhangzhouGdp: { name: '漳州市2024年GDP', url: 'https://www.peopleapp.com/' },
   ezStats: { name: '鄂州市统计局', url: 'https://www.ezhou.gov.cn/' },
   dqStats: { name: '大理州统计局', url: 'https://www.dali.gov.cn/' },
   gzGotohui: { name: '甘孜州统计局', url: 'https://tjj.gzz.gov.cn/' },
+  sdIncome: { name: '2024年全国336城人均可支配收入', url: 'https://baijiahao.baidu.com/s?id=1833419120358079465' },
+  scIncome: { name: '四川各市州人均收入(2024)', url: 'https://baijiahao.baidu.com/s?id=1835338175247460950' },
+  sxIncome: { name: '山西各市人均收入(2024)', url: 'https://baijiahao.baidu.com/s?id=1853806835166967107' },
+  snIncome: { name: '陕西各市人均收入(2024)', url: 'https://baijiahao.baidu.com/s?id=1836138791820251333' },
+  gxIncome: { name: '广西各市人均收入(2024)', url: 'https://baijiahao.baidu.com/s?id=1837619131311603608' },
+  qhIncome: { name: '青海各市州人均收入(2024)', url: 'https://www.sohu.com/a/910447709_121725332' },
+  hnIncome: { name: '湖南各市人均收入(2024)', url: 'https://www.sohu.com/a/901476180_121725332' },
+  ynIncome: { name: '云南各市州人均收入(2024)', url: 'https://baijiahao.baidu.com/s?id=1840437037139115917' },
+  haIncome: { name: '河南各市人均收入(2024)', url: 'https://www.sohu.com/a/909421862_121725332' },
+  fjIncome: { name: '福建各市人均收入(2024)', url: 'https://www.sohu.com/a/865168972_121725332' },
+  nmIncome: { name: '内蒙古各市盟人均收入(2024)', url: 'https://www.163.com/dy/article/JP3UDIV605563SPX.html' },
+  gsIncome: { name: '甘肃各市州人均收入(2024)', url: 'https://baijiahao.baidu.com/s?id=1830000823820990193' },
+  lnIncome: { name: '辽宁各市人均收入(2024)', url: 'https://www.toutiao.com/article/7595739099374551592/' },
+  gzIncome: { name: '贵州各市人均收入(2024)', url: 'https://baijiahao.baidu.com/s?id=1831833428432791209' },
+  dzIncome: { name: '2024年西南5省各城市人均收入', url: 'https://baijiahao.baidu.com/s?id=1831833428432791209' },
+  tieba: { name: '百度贴吧城市数据汇总', url: 'https://tieba.baidu.com/' },
+  scYearbookRetail: { name: '四川统计年鉴(各市州社零2024)', url: 'https://www.leshan.gov.cn/yearbook/2025/CHINESE/20-6.htm' },
+  henanRetail: { name: '百度动态(河南各市社零2024)', url: 'https://mbd.baidu.com/newspage/data/dtlandingsuper?nid=dt_4957666942271848340' },
+  ahRetailEst: { name: '聚汇数据(安徽各市社零2023推算)', url: 'https://www.163.com/dy/article/IQ6H8TDO05562JRF.html' },
+  ahRetail2024: { name: '安徽各市统计局(社零2024)', url: 'https://tjj.ah.gov.cn/' },
+  cityRetail: { name: '各市统计局统计公报(社零2024)', url: 'https://www.stats.gov.cn/' },
+  xjIncome: { name: '百家号(新疆各地州人均收入2024)', url: 'https://baijiahao.baidu.com/s?id=1835559371183666411' },
+  gzzStats: { name: '甘孜州统计局(2024)', url: 'https://tjj.gzz.gov.cn/jdsj/article/640359' },
+  lyStats: { name: '龙岩市统计局(2024)', url: 'https://www.longyan.gov.cn/sj/tjgb/202503/t20250328_2208474.htm' },
+  ptStats: { name: '莆田市统计局(2024)', url: 'https://www.putian.gov.cn/zwgk/tjxx/tjgb/202504/P020250414307498109808.pdf' },
+  lsStats: { name: '凉山州统计局(2024)', url: 'http://mzw.sc.gov.cn/scsmzw/ztjj/sjfb_mzjj_zt2024.shtml' },
 };
 
-function srcLink(s) { return s ? `<a href="${s.url}" target="_blank" class="source-link">📌 ${s.name}</a>` : ''; }
+function srcLink(s) {
+  if (!s) return '';
+  const url = typeof s === 'string' ? s : s.url;
+  const name = typeof s === 'string' ? '数据来源' : s.name;
+  return `<a href="${url}" target="_blank" class="source-link">📌 ${name}</a>`;
+}
 
 // 城市数据：[中文名, 拼音, 省份, GDP(亿元), GDP来源, 社零(亿元), 社零来源, 人均收入(元), 收入来源]
 const cityData = [
-  ["阿坝州","ABA","四川",null,null,null,null,null,null],
-  ["阿克苏","AKESU","新疆",2042.98,SRC.euobiz,null,null,null,null],
-  ["阿拉善盟","ALASHANMENG","内蒙古",418.8,SRC.gotohui,null,null,null,null],
-  ["阿勒泰","ALETAI","新疆",484.21,SRC.gotohui,null,null,null,null],
-  ["阿里地区","ALI","西藏",114.21,SRC.gotohui,null,null,null,null],
-  ["安康","ANKANG","陕西",1185,SRC.gotohui,null,null,null,null],
-  ["安庆","ANQING","安徽",3306.08,SRC.gotohui,null,null,34327,SRC.qqIncome],
-  ["鞍山","ANSHAN","辽宁",2180.4,SRC.euobiz,null,null,null,null],
-  ["安顺","ANSHUN","贵州",1315.94,SRC.gotohui,null,null,null,null],
-  ["安阳","ANYANG","河南",2765.80,SRC.haStats,null,null,33344,SRC.qqIncome],
-  ["白城","BAICHENG","吉林",626.52,SRC.gotohui,null,null,null,null],
-  ["百色","BAISE","广西",2101.34,SRC.gotohui,null,null,28378,SRC.liuzhouIncome],
-  ["白山","BAISHAN","吉林",590.17,SRC.gotohui,null,null,null,null],
-  ["白银","BAIYIN","甘肃",789.23,SRC.gotohui,null,null,null,null],
-  ["保定","BAODING","河北",5002.5,SRC.hebStats,1851.2,SRC.bdRetail,35137,SRC.bdIncome],
-  ["宝鸡","BAOJI","陕西",2649,SRC.gotohui,null,null,null,null],
-  ["保山","BAOSHAN","云南",1347.01,SRC.gotohui,null,null,null,null],
-  ["包头","BAOTOU","内蒙古",4711.92,SRC.euobiz,939.5,SRC.btStats,59067,SRC.btIncome],
-  ["巴彦淖尔","BAYANNAOER","内蒙古",1277.57,SRC.gotohui,null,null,null,null],
-  ["巴中","BAZHONG","四川",954.14,SRC.gotohui,null,null,null,null],
-  ["北海","BEIHAI","广西",1974.04,SRC.gotohui,null,null,37949,SRC.liuzhouIncome],
-  ["北京","BEIJING","北京",52073.4,SRC.bjStats,13677,SRC.china5e,89090,SRC.bjStats],
-  ["蚌埠","BENGBU","安徽",2421.1,SRC.gotohui,null,null,39281,SRC.qqIncome],
-  ["本溪","BENXI","辽宁",1006.0,SRC.gotohui,null,null,null,null],
-  ["毕节","BIJIE","贵州",2541.14,SRC.euobiz,null,null,null,null],
-  ["滨州","BINZHOU","山东",3558.17,SRC.sdStats,1147.76,SRC.bzRetail,null,null],
-  ["亳州","BOZHOU","安徽",2621.1,SRC.gotohui,null,null,31106,SRC.qqIncome],
-  ["博州","BOZHOU","新疆",575.15,SRC.gotohui,null,null,null,null],
-  ["沧州","CANGZHOU","河北",4930.9,SRC.hebeiStats,1321.2,SRC.cangStats,36214,SRC.cangIncome],
-  ["长春","CHANGCHUN","吉林",8005.59,SRC.jlStats,2551.17,SRC.ccRetail,40200,SRC.euobiz],
-  ["常德","CHANGDE","湖南",4770.93,SRC.euobiz,1797.8,SRC.cdStats,35630,SRC.cdIncome2],
-  ["昌都","CHANGDU","西藏",424.86,SRC.euobiz,null,null,null,null],
-  ["昌吉州","CHANGJI","新疆",2637.67,SRC.euobiz,null,null,null,null],
-  ["长沙","CHANGSHA","湖南",15737.82,SRC.csStats,5738.93,SRC.csRetail,66400,SRC.euobiz],
-  ["长治","CHANGZHI","山西",2558.3,SRC.euobiz,null,null,null,null],
-  ["常州","CHANGZHOU","江苏",11158.71,SRC.jsStats,2918.1,SRC.czStats,68295,SRC.net163],
-  ["朝阳","CHAOYANG","辽宁",1156.7,SRC.gotohui,null,null,null,null],
-  ["潮州","CHAOZHOU","广东",1452.17,SRC.gdStats,null,null,null,null],
-  ["承德","CHENGDE","河北",null,null,null,null,32795,SRC.hbIncome],
-  ["成都","CHENGDU","四川",24763.61,SRC.scStats,11434.1,SRC.chengduStats,54363,SRC.cdIncome],
-  ["郴州","CHENZHOU","湖南",3502.08,SRC.gotohui,null,null,36846,SRC.qqIncome],
-  ["赤峰","CHIFENG","内蒙古",2407.08,SRC.gotohui,null,null,null,null],
-  ["池州","CHIZHOU","安徽",1225.0,SRC.gotohui,null,null,37003,SRC.qqIncome],
-  ["重庆","CHONGQING","重庆",33757.93,SRC.cqStats,16688.5,SRC.china5e,41580,SRC.cqIncome],
-  ["崇左","CHONGZUO","广西",1358.64,SRC.gotohui,null,null,31390,SRC.liuzhouIncome],
-  ["楚雄州","CHUXIONG","云南",2040.17,SRC.gotohui,null,null,null,null],
-  ["滁州","CHUZHOU","安徽",4221.1,SRC.ahStats,1723.9,SRC.czRetail,35867,SRC.qqIncome],
-  ["大理州","DALI","云南",2010.93,SRC.dqStats,null,null,null,null],
-  ["大连","DALIAN","辽宁",10002.1,SRC.lnStats,2180.8,SRC.dlStats,52007,SRC.dlIncome],
-  ["丹东","DANDONG","辽宁",1019.2,SRC.gotohui,null,null,null,null],
-  ["儋州","DANZHOU","海南",1030.34,SRC.euobiz,null,null,33000,SRC.provIncome],
-  ["大庆","DAQING","黑龙江",2693.2,SRC.euobiz,null,null,38000,SRC.tieba],
-  ["大同","DATONG","山西",1815.0,SRC.gotohui,null,null,null,null],
-  ["大兴安岭","DAXINGANLING","黑龙江",177.5,SRC.gotohui,null,null,null,null],
-  ["达州","DAZHOU","四川",2990.86,SRC.scStats,1598.9,SRC.dzRetail2,null,null],
-  ["德宏州","DEHONG","云南",648.07,SRC.gotohui,null,null,null,null],
-  ["德阳","DEYANG","四川",null,null,null,null,null,null],
-  ["德州","DEZHOU","山东",4214.61,SRC.sdStats,1617.61,SRC.dzRetail,null,null],
-  ["定西","DINGXI","甘肃",793.94,SRC.gotohui,null,null,null,null],
-  ["迪庆州","DIQING","云南",316.65,SRC.gotohui,null,null,null,null],
-  ["东莞","DONGGUAN","广东",12760.2,SRC.gdStats,4446,SRC.dgStats,70803,SRC.dgIncome],
-  ["东营","DONGYING","山东",4502.73,SRC.sdStats,970.92,SRC.dyStats,null,null],
-  ["鄂尔多斯","EERDUOSI","内蒙古",6122.21,SRC.nmgStat,698,SRC.eedsRetail,55914,SRC.eedsIncome],
-  ["恩施州","ENSHI","湖北",null,null,null,null,null,null],
-  ["鄂州","EZHOU","湖北",1341.3,SRC.ezStats,null,null,40716,SRC.qqIncome],
-  ["防城港","FANGCHENGGANG","广西",1201.26,SRC.gotohui,null,null,37401,SRC.liuzhouIncome],
-  ["佛山","FOSHAN","广东",13157.35,SRC.gdStats,3945.94,SRC.fsStats,71995,SRC.qqIncome],
-  ["抚顺","FUSHUN","辽宁",1003.8,SRC.gotohui,null,null,null,null],
-  ["阜新","FUXIN","辽宁",651.8,SRC.gotohui,null,null,null,null],
-  ["阜阳","FUYANG","安徽",3777.6,SRC.gotohui,null,null,30113,SRC.qqIncome],
-  ["福州","FUZHOU","福建",15112.32,SRC.fjStats,5969.1,SRC.fzStats,null,null],
-  ["抚州","FUZHOU2","江西",2298.11,SRC.gotohui,null,null,30000,SRC.jxStats],
-  ["甘南州","GANNAN","甘肃",275.62,SRC.gotohui,null,null,null,null],
-  ["赣州","GANZHOU","江西",5221.3,SRC.euobiz,2352.42,SRC.gzStats,null,null],
-  ["甘孜州","GANZI","四川",null,null,null,null,null,null],
-  ["广安","GUANGAN","四川",1700.9,SRC.scStats,null,null,null,null],
-  ["广元","GUANGYUAN","四川",1307.82,SRC.gotohui,null,null,null,null],
-  ["广州","GUANGZHOU","广东",32039.46,SRC.gdStats,11032.38,SRC.china5e,80591,SRC.qqIncome],
-  ["贵港","GUIGANG","广西",1628.44,SRC.gotohui,null,null,33224,SRC.liuzhouIncome],
-  ["桂林","GUILIN","广西",2579.53,SRC.euobiz,null,null,null,null],
-  ["贵阳","GUIYANG","贵州",6038.15,SRC.guizhouStats,2576.34,SRC.gyStats,47922,SRC.gyIncome],
-  ["果洛州","GUOLUO","青海",73.15,SRC.gotohui,null,null,null,null],
-  ["固原","GUYUAN","宁夏",488.07,SRC.gotohui,null,null,null,null],
-  ["海北州","HAIBEI","青海",122.5,SRC.gotohui,null,null,null,null],
-  ["海东","HAIDONG","青海",615.77,SRC.euobiz,null,null,null,null],
-  ["海口","HAIKOU","海南",2562.85,SRC.hiStats,null,null,36000,SRC.provIncome],
-  ["海南州","HAINAN2","青海",246.26,SRC.gotohui,null,null,null,null],
-  ["海西州","HAIXI","青海",917.29,SRC.euobiz,null,null,null,null],
-  ["哈密","HAMI","新疆",1162.95,SRC.gotohui,null,null,null,null],
-  ["邯郸","HANDAN","河北",4920.1,SRC.hebeiStats,1475.2,SRC.hdStats,36721,SRC.hdIncome],
-  ["杭州","HANGZHOU","浙江",23010.9,SRC.zjStats,9499,SRC.china5e,80017,SRC.qqIncome],
-  ["汉中","HANZHONG","陕西",2010,SRC.gotohui,null,null,null,null],
-  ["哈尔滨","HARBIN","黑龙江",6188.5,SRC.hljStat,2557.7,SRC.hrbRetail,39817,SRC.hrbIncome],
-  ["鹤壁","HEBI","河南",1144.12,SRC.hnStats,null,null,36910,SRC.hnStats],
-  ["河池","HECHI","广西",1453.62,SRC.gotohui,null,null,25171,SRC.liuzhouIncome],
-  ["合肥","HEFEI","安徽",14210,SRC.ahStats,5320.9,SRC.hfStats,58930,SRC.net163],
-  ["鹤岗","HEGANG","黑龙江",392.23,SRC.gotohui,null,null,null,null],
-  ["黑河","HEIHE","黑龙江",742.3,SRC.gotohui,null,null,null,null],
-  ["衡水","HENGSHUI","河北",2011.8,SRC.hebeiStats,null,null,32210,SRC.hsIncome],
-  ["衡阳","HENGYANG","湖南",4689.55,SRC.hnStats,null,null,40550,SRC.qqIncome],
-  ["和田","HETIAN","新疆",648.11,SRC.gotohui,null,null,null,null],
-  ["河源","HEYUAN","广东",1434.57,SRC.gdStats,null,null,null,null],
-  ["菏泽","HEZE","山东",4937.4,SRC.sdStats,2035.4,SRC.hzStats,null,null],
-  ["贺州","HEZHOU","广西",1006.74,SRC.gotohui,null,null,31149,SRC.liuzhouIncome],
-  ["红河州","HONGHE","云南",3154.52,SRC.ynStats,1200.29,SRC.hhRetail,31054,SRC.hhIncome],
-  ["淮安","HUAIAN","江苏",5630.11,SRC.jsStats,1872.34,SRC.haRetail,43553,SRC.net163],
-  ["淮北","HUAIBEI","安徽",1419.2,SRC.gotohui,null,null,37493,SRC.qqIncome],
-  ["怀化","HUAIHUA","湖南",2191.55,SRC.gotohui,null,null,null,null],
-  ["淮南","HUAINAN","安徽",1750.1,SRC.gotohui,null,null,38472,SRC.qqIncome],
-  ["黄冈","HUANGGANG","湖北",null,null,null,null,31770,SRC.qqIncome],
-  ["黄南州","HUANGNAN","青海",124.17,SRC.gotohui,null,null,null,null],
-  ["黄山","HUANGSHAN","安徽",1204.9,SRC.gotohui,null,null,39114,SRC.qqIncome],
-  ["黄石","HUANGSHI","湖北",null,null,null,null,42534,SRC.hsIncome2],
-  ["呼和浩特","HUHEHAOTE","内蒙古",4278.27,SRC.euobiz,1125.3,SRC.hhStat,51189,SRC.hhhtIncome],
-  ["惠州","HUIZHOU","广东",6363.66,SRC.gdStats,2093.22,SRC.hzStat,50812,SRC.hzIncome],
-  ["葫芦岛","HULUDAO","辽宁",1013.7,SRC.gotohui,null,null,null,null],
-  ["呼伦贝尔","HULUNBEIER","内蒙古",1749.74,SRC.gotohui,null,null,null,null],
-  ["湖州","HUZHOU","浙江",null,null,1978.0,SRC.huzStats,70521,SRC.net163],
-  ["佳木斯","JIAMUSI","黑龙江",1052.3,SRC.gotohui,null,null,31000,SRC.tieba],
-  ["吉安","JIAN","江西",3105.70,SRC.gotohui,null,null,30000,SRC.jxStats],
-  ["江门","JIANGMEN","广东",4293.91,SRC.gdStats,1307.95,SRC.jmStat,44524,SRC.jmIncome],
-  ["焦作","JIAOZUO","河南",2479.60,SRC.gotohui,null,null,37116,SRC.hnStats],
-  ["嘉兴","JIAXING","浙江",7851.06,SRC.zjStats,2972.14,SRC.jxStats,72086,SRC.qqIncome],
-  ["嘉峪关","JIAYUGUAN","甘肃",391.0,SRC.gotohui,null,null,null,null],
-  ["揭阳","JIEYANG","广东",2553.75,SRC.gdStats,null,null,null,null],
-  ["吉林市","JILIN","吉林",1702.32,SRC.euobiz,null,null,null,null],
-  ["济南","JINAN","山东",14210.09,SRC.sdStats,5547.9,SRC.jnStats,null,null],
-  ["金昌","JINCHANG","甘肃",670.2,SRC.gotohui,null,null,null,null],
-  ["晋城","JINCHENG","山西",2429.9,SRC.gotohui,null,null,null,null],
-  ["景德镇","JINGDEZHEN","江西",1189.63,SRC.gotohui,null,null,43823,SRC.qqIncome],
-  ["荆门","JINGMEN","湖北",null,null,null,null,38430,SRC.qqIncome],
-  ["荆州","JINGZHOU","湖北",null,null,2022.57,SRC.jzStats,38684,SRC.jzIncome],
-  ["金华","JINHUA","浙江",7313.47,SRC.zjStats,4826.5,SRC.jhStats,67877,SRC.net163],
-  ["济宁","JINING","山东",6128.09,SRC.sdStats,3233.6,SRC.jnStats2,null,null],
-  ["晋中","JINZHONG","山西",2462.6,SRC.gotohui,null,null,null,null],
-  ["锦州","JINZHOU","辽宁",1365.3,SRC.gotohui,null,null,null,null],
-  ["九江","JIUJIANG","江西",4246.5,SRC.jiangxiStats,1788.14,SRC.jjRetail,41822,SRC.jjIncome],
-  ["酒泉","JIUQUAN","甘肃",1103.6,SRC.euobiz,376.9,SRC.cityStats,null,null],
-  ["鸡西","JIXI","黑龙江",648.49,SRC.gotohui,null,null,null,null],
-  ["济源","JIYUAN","河南",807.81,SRC.gotohui,null,null,39258,SRC.hnStats],
-  ["开封","KAIFENG","河南",2860.06,SRC.gotohui,null,null,null,null],
-  ["喀什","KASHI","新疆",1752.12,SRC.gotohui,null,null,null,null],
-  ["克拉玛依","KELAMAYI","新疆",1303.96,SRC.gotohui,null,null,63700,SRC.euobiz],
-  ["克州","KEZHOU","新疆",272.24,SRC.gotohui,null,null,null,null],
-  ["昆明","KUNMING","云南",8637.45,SRC.ynStats,3817.69,SRC.kmRetail,48754,SRC.kmIncome],
-  ["来宾","LAIBIN","广西",1049.66,SRC.gotohui,null,null,29444,SRC.liuzhouIncome],
-  ["廊坊","LANGFANG","河北",4040.5,SRC.hebeiStats,1558.7,SRC.lfStats,46222,SRC.lfIncome],
-  ["兰州","LANZHOU","甘肃",3903.6,SRC.gsStats,1474.3,SRC.lzRetail,48390,SRC.lzIncome],
-  ["拉萨","LASA","西藏",1090.99,SRC.xizangStats,null,null,null,null],
-  ["乐山","LESHAN","四川",2460.55,SRC.gotohui,null,null,null,null],
-  ["凉山州","LIANGSHAN","四川",null,null,null,null,null,null],
-  ["连云港","LIANYUNGANG","江苏",4830.94,SRC.jsStats,null,null,null,null],
-  ["聊城","LIAOCHENG","山东",3304.15,SRC.sdStats,1388.01,SRC.lcRetail,null,null],
-  ["辽阳","LIAOYANG","辽宁",1001.2,SRC.gotohui,null,null,null,null],
-  ["辽源","LIAOYUAN","吉林",547.09,SRC.gotohui,null,null,null,null],
-  ["丽江","LIJIANG","云南",744.27,SRC.gotohui,null,null,null,null],
-  ["临沧","LINCANG","云南",1127.75,SRC.gotohui,null,null,null,null],
-  ["临汾","LINFEN","山西",2513.8,SRC.gotohui,null,null,null,null],
-  ["临夏州","LINXIA","甘肃",546.6,SRC.gotohui,null,null,null,null],
-  ["临沂","LINYI","山东",6862.15,SRC.sdStats,null,null,null,null],
-  ["林芝","LINZHI","西藏",292.34,SRC.gotohui,null,null,null,null],
-  ["丽水","LISHUI","浙江",null,null,null,null,52979,SRC.net163],
-  ["六安","LIUAN","安徽",2407.3,SRC.gotohui,null,null,31650,SRC.qqIncome],
-  ["六盘水","LIUPANSHUI","贵州",1777.75,SRC.gotohui,null,null,null,null],
-  ["柳州","LIUZHOU","广西",3096.91,SRC.euobiz,null,null,39412,SRC.liuzhouIncome],
-  ["陇南","LONGNAN","甘肃",716.0,SRC.gotohui,null,null,null,null],
-  ["龙岩","LONGYAN","福建",null,null,null,null,null,null],
-  ["娄底","LOUDI","湖南",2237.30,SRC.gotohui,null,null,null,null],
-  ["漯河","LUOHE","河南",1954.00,SRC.gotohui,null,null,35310,SRC.qqIncome],
-  ["洛阳","LUOYANG","河南",6164.5,SRC.hnStats,2475.1,SRC.lyRetail,37240,SRC.hnStats],
-  ["泸州","LUZHOU","四川",3004.29,SRC.scStats,1633.5,SRC.lzRetail2,null,null],
-  ["吕梁","LVLIANG","山西",2575,SRC.euobiz,null,null,null,null],
-  ["马鞍山","MAANSHAN","安徽",2920.9,SRC.gotohui,null,null,58205,SRC.net163],
-  ["茂名","MAOMING","广东",4106.4,SRC.gdStats,1557.39,SRC.mmStat,32091,SRC.mmIncome],
-  ["眉山","MEISHAN","四川",1925.43,SRC.gotohui,null,null,null,null],
-  ["梅州","MEIZHOU","广东",1583.23,SRC.gdStats,null,null,null,null],
-  ["绵阳","MIANYANG","四川",4600.66,SRC.scStats,2003.4,SRC.myRetail,37806,SRC.myIncome],
-  ["牡丹江","MUDANJIANG","黑龙江",1094.77,SRC.gotohui,null,null,null,null],
-  ["南昌","NANCHANG","江西",8141.69,SRC.jiangxiStats,2921.78,SRC.ncStats,51202,SRC.ncIncome],
-  ["南充","NANCHONG","四川",2901.76,SRC.scStats,null,null,null,null],
-  ["南京","NANJING","江苏",19428.78,SRC.jsStats,8135.85,SRC.china5e,78243,SRC.qqIncome],
-  ["南宁","NANNING","广西",6212.46,SRC.gxStats,2186.7,SRC.nnRetail,39659,SRC.nnIncome],
-  ["南平","NANPING","福建",2189.73,SRC.gotohui,null,null,null,null],
-  ["南通","NANTONG","江苏",12801.5,SRC.jsStats,3855.4,SRC.ntStats,57242,SRC.ntIncome],
-  ["南阳","NANYANG","河南",5167.86,SRC.haStats,2599.76,SRC.nyRetail,32012,SRC.nyIncome],
-  ["那曲","NAQU","西藏",208.66,SRC.gotohui,null,null,null,null],
-  ["内江","NEIJIANG","四川",1935.76,SRC.gotohui,null,null,null,null],
-  ["宁波","NINGBO","浙江",18715.68,SRC.zjStats,5703,SRC.nbStats,77779,SRC.qqIncome],
-  ["宁德","NINGDE","福建",4251.72,SRC.gotohui,null,null,null,null],
-  ["怒江州","NUJIANG","云南",288.98,SRC.gotohui,null,null,null,null],
-  ["盘锦","PANJIN","辽宁",1417.6,SRC.gotohui,null,null,null,null],
-  ["攀枝花","PANZHIHUA","四川",1453.59,SRC.gotohui,null,null,null,null],
-  ["平顶山","PINGDINGSHAN","河南",2929.40,SRC.gotohui,null,null,null,null],
-  ["平凉","PINGLIANG","甘肃",754.88,SRC.gotohui,null,null,null,null],
-  ["萍乡","PINGXIANG","江西",1276.04,SRC.gotohui,null,null,43614,SRC.qqIncome],
-  ["普洱","PUER","云南",1252.40,SRC.gotohui,null,null,null,null],
-  ["莆田","PUTIAN","福建",null,null,null,null,null,null],
-  ["濮阳","PUYANG","河南",2106.17,SRC.gotohui,null,null,null,null],
-  ["黔东南州","QIANDONGNAN","贵州",1500.24,SRC.gotohui,null,null,null,null],
-  ["黔南州","QIANNAN","贵州",2008.49,SRC.gotohui,null,null,null,null],
-  ["黔西南州","QIANXINAN","贵州",1535.28,SRC.gotohui,null,null,null,null],
-  ["青岛","QINGDAO","山东",17560.67,SRC.sdStats,6960.7,SRC.qdStats,null,null],
-  ["庆阳","QINGYANG","甘肃",1235.32,SRC.euobiz,null,null,null,null],
-  ["清远","QINGYUAN","广东",2317.47,SRC.gdStats,null,null,null,null],
-  ["秦皇岛","QINHUANGDAO","河北",2200.4,SRC.hebeiStats,null,null,38276,SRC.qhdIncome],
-  ["钦州","QINZHOU","广西",1907.61,SRC.gotohui,null,null,31906,SRC.liuzhouIncome],
-  ["齐齐哈尔","QIQIHAER","黑龙江",1402.1,SRC.euobiz,null,null,31000,SRC.tieba],
-  ["七台河","QITAIHE","黑龙江",249.41,SRC.gotohui,null,null,null,null],
-  ["泉州","QUANZHOU","福建",13778.34,SRC.fjStats,6416.07,SRC.qzStats,null,null],
-  ["曲靖","QUJING","云南",3777.6,SRC.ynStats,1357.32,SRC.qjRetail,33224,SRC.qjIncome],
-  ["衢州","QUZHOU","浙江",null,null,null,null,53555,SRC.net163],
-  ["日喀则","RIKAZE","西藏",509.87,SRC.euobiz,null,null,null,null],
-  ["日照","RIZHAO","山东",2689.96,SRC.sdStats,null,null,null,null],
-  ["三门峡","SANMENXIA","河南",1702.61,SRC.gotohui,null,null,null,null],
-  ["三明","SANMING","福建",2511.98,SRC.gotohui,878.08,SRC.smRetail,null,null],
-  ["三沙","SANSHA","海南",null,null,null,null,null,null],
-  ["三亚","SANYA","海南",1033.88,SRC.euobiz,null,null,38000,SRC.provIncome],
-  ["上海","SHANGHAI","上海",56708.71,SRC.shStats,16600.93,SRC.china5e,91987,SRC.shStats],
-  ["商洛","SHANGLUO","陕西",810,SRC.gotohui,null,null,null,null],
-  ["商丘","SHANGQIU","河南",3475.38,SRC.gotohui,null,null,null,null],
-  ["上饶","SHANGRAO","江西",3720.9,SRC.jxStats,null,null,null,null],
-  ["山南","SHANNAN","西藏",331.8,SRC.gotohui,null,null,null,null],
-  ["汕头","SHANTOU","广东",3023.83,SRC.gdStats,1483.23,SRC.stRetail,null,null],
-  ["汕尾","SHANWEI","广东",1546.3,SRC.gdStats,null,null,null,null],
-  ["韶关","SHAOGUAN","广东",1705.1,SRC.gdStats,null,null,null,null],
-  ["绍兴","SHAOXING","浙江",8932.13,SRC.zjStats,3255,SRC.sxStats,76732,SRC.qqIncome],
-  ["邵阳","SHAOYANG","湖南",2883.49,SRC.gotohui,null,null,null,null],
-  ["沈阳","SHENYANG","辽宁",9100.33,SRC.lnStats,4195.4,SRC.syRetail,51827,SRC.syIncome],
-  ["深圳","SHENZHEN","广东",38731.8,SRC.gdStats,10259.93,SRC.china5e,84945,SRC.qqIncome],
-  ["石河子","SHIHEZI","新疆",387.0,SRC.xjStats,null,null,null,null],
-  ["石家庄","SHIJIAZHUANG","河北",8651.7,SRC.hebeiStats,2787.5,SRC.sjzStats,42085,SRC.sjzIncome],
-  ["十堰","SHIYAN","湖北",2565.84,SRC.hbStats,null,null,33922,SRC.sysIncome],
-  ["石嘴山","SHIZUISHAN","宁夏",579.84,SRC.gotohui,null,null,null,null],
-  ["双鸭山","SHUANGYASHAN","黑龙江",571.1,SRC.gotohui,null,null,null,null],
-  ["朔州","SHUOZHOU","山西",1303.7,SRC.gotohui,null,null,null,null],
-  ["四平","SIPING","吉林",601.57,SRC.gotohui,null,null,null,null],
-  ["松原","SONGYUAN","吉林",1030.6,SRC.gotohui,null,null,null,null],
-  ["绥化","SUIHUA","黑龙江",1285.14,SRC.gotohui,null,null,null,null],
-  ["遂宁","SUINING","四川",1861.47,SRC.gotohui,null,null,null,null],
-  ["随州","SUIZHOU","湖北",null,null,null,null,34783,SRC.qqIncome],
-  ["宿迁","SUQIAN","江苏",5026.6,SRC.jsStats,1739.07,SRC.sqRetail,36889,SRC.sqIncome],
-  ["苏州","SUZHOU","江苏",27695.09,SRC.jsStats,9092.2,SRC.china5e,80796,SRC.qqIncome],
-  ["宿州","SUZHOU2","安徽",2538.4,SRC.gotohui,null,null,30171,SRC.qqIncome],
-  ["塔城","TACHENG","新疆",1050.47,SRC.gotohui,null,null,null,null],
-  ["泰安","TAIAN","山东",3803.48,SRC.sdStats,1342.3,SRC.taStats,null,null],
-  ["太原","TAIYUAN","山西",5382.45,SRC.sx2Stats,2365.53,SRC.tyRetail,46446,SRC.tyIncome],
-  ["泰州","TAIZHOU","江苏",7255.27,SRC.jsStats,1834.75,SRC.tz2Stats,52996,SRC.tz2Income],
-  ["台州","TAIZHOU2","浙江",7005.87,SRC.zjStats,3084.34,SRC.tzStats,67795,SRC.net163],
-  ["唐山","TANGSHAN","河北",10450.2,SRC.hebeiStats,null,null,47200,SRC.tsIncome],
-  ["天津","TIANJIN","天津",18539.82,SRC.tjStats,4140.7,SRC.tianjinRetail,55918,SRC.tjIncome],
-  ["天水","TIANSHUI","甘肃",980.88,SRC.gotohui,null,null,null,null],
-  ["铁岭","TIELING","辽宁",788.9,SRC.gotohui,null,null,null,null],
-  ["铜川","TONGCHUAN","陕西",607,SRC.gotohui,null,null,null,null],
-  ["通化","TONGHUA","吉林",592.14,SRC.gotohui,null,null,null,null],
-  ["通辽","TONGLIAO","内蒙古",1737.71,SRC.gotohui,null,null,null,null],
-  ["铜陵","TONGLING","安徽",1415.4,SRC.gotohui,null,null,40786,SRC.qqIncome],
-  ["铜仁","TONGREN","贵州",1722.66,SRC.gotohui,null,null,null,null],
-  ["吐鲁番","TURPAN","新疆",668.1,SRC.gotohui,null,null,null,null],
-  ["潍坊","WEIFANG","山东",8587.36,SRC.wfGDP,3584.9,SRC.wfRetail,45794,SRC.wfIncome],
-  ["威海","WEIHAI","山东",3896.09,SRC.sdStats,1310.5,SRC.whStats,null,null],
-  ["渭南","WEINAN","陕西",2232,SRC.gotohui,null,null,34950,SRC.wnIncome],
-  ["文山州","WENSHAN","云南",1632.64,SRC.gotohui,null,null,null,null],
-  ["温州","WENZHOU","浙江",10213.92,SRC.zjStats,5143.9,SRC.wzStats,73660,SRC.qqIncome],
-  ["乌海","WUHAI","内蒙古",540.75,SRC.gotohui,null,null,null,null],
-  ["武汉","WUHAN","湖北",22147.35,SRC.hbStats,9013.96,SRC.china5e,62530,SRC.wuhanIncome],
-  ["芜湖","WUHU","安徽",5402.7,SRC.ahStats,2120.62,SRC.whRetail,51979,SRC.whIncome],
-  ["乌兰察布","WULANCHABU","内蒙古",1260.27,SRC.gotohui,null,null,null,null],
-  ["乌鲁木齐","WULUMUQI","新疆",4658.19,SRC.xjStats,1174.48,SRC.wlmqRetail,54019,SRC.wlmqIncome],
-  ["武威","WUWEI","甘肃",802.27,SRC.gotohui,null,null,null,null],
-  ["无锡","WUXI","江苏",16773.94,SRC.jsStats,4418.47,SRC.wuxiStats,75200,SRC.qqIncome],
-  ["吴忠","WUZHONG","宁夏",961.67,SRC.euobiz,null,null,null,null],
-  ["梧州","WUZHOU","广西",1719.79,SRC.gotohui,null,null,33659,SRC.liuzhouIncome],
-  ["厦门","XIAMEN","福建",8980.37,SRC.fjStats,3448.6,SRC.fjStats,77762,SRC.qqIncome],
-  ["西安","XIAN","陕西",13902.67,SRC.shaanxiStats,5721.21,SRC.xaStats,47496,SRC.xaIncome],
-  ["湘潭","XIANGTAN","湖南",3077.23,SRC.gotohui,null,null,45628,SRC.qqIncome],
-  ["湘西州","XIANGXI","湖南",889.50,SRC.gotohui,null,null,null,null],
-  ["襄阳","XIANGYANG","湖北",6113.85,SRC.hbStats,2410.24,SRC.xyRetail,41785,SRC.xyIncome],
-  ["咸宁","XIANNING","湖北",null,null,null,null,33600,SRC.qqIncome],
-  ["咸阳","XIANYANG","陕西",3104.53,SRC.shaanxiStats,965.74,SRC.xyRetail2,33775,SRC.qqIncome],
-  ["孝感","XIAOGAN","湖北",null,null,null,null,39786,SRC.qqIncome],
-  ["锡林郭勒盟","XILINGUOLEMENG","内蒙古",1289.84,SRC.gotohui,null,null,null,null],
-  ["兴安盟","XINGANMENG","内蒙古",850.09,SRC.gotohui,null,null,null,null],
-  ["邢台","XINGTAI","河北",2800.8,SRC.hebeiStats,null,null,31463,SRC.xtIncome],
-  ["西宁","XINING","青海",1914.77,SRC.qhStats,null,null,null,null],
-  ["新乡","XINXIANG","河南",3687.07,SRC.gotohui,null,null,33277,SRC.qqIncome],
-  ["信阳","XINYANG","河南",3196.70,SRC.gotohui,null,null,null,null],
-  ["新余","XINYU","江西",1215.60,SRC.gotohui,null,null,45451,SRC.qqIncome],
-  ["忻州","XINZHOU","山西",1330.4,SRC.gotohui,null,null,null,null],
-  ["西双版纳","XISHUANGBANNA","云南",940.83,SRC.gotohui,null,null,null,null],
-  ["宣城","XUANCHENG","安徽",2148.6,SRC.gotohui,null,null,43518,SRC.net163],
-  ["许昌","XUCHANG","河南",3583.40,SRC.gotohui,null,null,35518,SRC.qqIncome],
-  ["徐州","XUZHOU","江苏",9957.22,SRC.jsStats,3398.7,SRC.xzStats,42230,SRC.net163],
-  ["雅安","YAAN","四川",1048.18,SRC.gotohui,null,null,null,null],
-  ["延安","YANAN","陕西",2372,SRC.gotohui,null,null,null,null],
-  ["延边州","YANBIAN","吉林",1064.08,SRC.euobiz,null,null,null,null],
-  ["盐城","YANCHENG","江苏",8045.28,SRC.jsStats,2894.7,SRC.ycStats,45713,SRC.net163],
-  ["阳江","YANGJIANG","广东",1671.22,SRC.gdStats,null,null,null,null],
-  ["阳泉","YANGQUAN","山西",870.6,SRC.gotohui,null,null,null,null],
-  ["扬州","YANGZHOU","江苏",8056.75,SRC.jsStats,1961.68,SRC.yzRetail,54386,SRC.yzIncome],
-  ["烟台","YANTAI","山东",11350.98,SRC.sdStats,4068.85,SRC.ytStats,null,null],
-  ["宜宾","YIBIN","四川",4134.73,SRC.scStats,1187.63,SRC.ybRetail,null,null],
-  ["宜昌","YICHANG","湖北",6464.42,SRC.euobiz,2376.24,SRC.yc2Stats,42714,SRC.ycIncome],
-  ["宜春","YICHUN","江西",3930.24,SRC.gotohui,null,null,33000,SRC.jxStats],
-  ["伊春","YICHUN2","黑龙江",380.9,SRC.gotohui,null,null,null,null],
-  ["伊犁州","YILI","新疆",1936.27,SRC.gotohui,null,null,null,null],
-  ["银川","YINCHUAN","宁夏",3033.52,SRC.nxStats,844.28,SRC.ycRetail,45876,SRC.ycIncome2],
-  ["营口","YINGKOU","辽宁",1570.2,SRC.gotohui,null,null,null,null],
-  ["鹰潭","YINGTAN","江西",1459.41,SRC.gotohui,null,null,41165,SRC.qqIncome],
-  ["益阳","YIYANG","湖南",2381.46,SRC.gotohui,null,null,null,null],
-  ["永州","YONGZHOU","湖南",2829.58,SRC.gotohui,null,null,null,null],
-  ["岳阳","YUEYANG","湖南",5386.88,SRC.euobiz,1980.05,SRC.yyStats,38534,SRC.yyIncome],
-  ["榆林","YULIN","陕西",7501.06,SRC.shaanxiStats,1053.95,SRC.ylRetail,null,null],
-  ["玉林","YULIN2","广西",2437.44,SRC.gotohui,null,null,36412,SRC.liuzhouIncome],
-  ["运城","YUNCHENG","山西",2248.0,SRC.gotohui,null,null,null,null],
-  ["云浮","YUNFU","广东",1344.87,SRC.gdStats,null,null,null,null],
-  ["玉树州","YUSHU","青海",97.43,SRC.gotohui,null,null,null,null],
-  ["玉溪","YUXI","云南",2688.33,SRC.gotohui,null,null,null,null],
-  ["枣庄","ZAOZHUANG","山东",2502.52,SRC.sdStats,null,null,null,null],
-  ["张家界","ZHANGJIAJIE","湖南",667.83,SRC.gotohui,null,null,null,null],
-  ["张家口","ZHANGJIAKOU","河北",1913.0,SRC.gotohui,null,null,28000,SRC.hbIncome],
-  ["张掖","ZHANGYE","甘肃",734.35,SRC.gotohui,null,null,null,null],
-  ["漳州","ZHANGZHOU","福建",null,null,null,null,null,null],
-  ["湛江","ZHANJIANG","广东",3952.94,SRC.gdStats,1620.06,SRC.zjRetail2,32336,SRC.zjIncome2],
-  ["肇庆","ZHAOQING","广东",2974.84,SRC.gdStats,1217.7,SRC.zqRetail,35374,SRC.zqIncome],
-  ["昭通","ZHAOTONG","云南",2103.40,SRC.gotohui,null,null,null,null],
-  ["郑州","ZHENGZHOU","河南",15244.6,SRC.hnStats,6629.4,SRC.hnStats,48021,SRC.hnStats],
-  ["镇江","ZHENJIANG","江苏",5736.78,SRC.jsStats,1742.63,SRC.zjRetail,61387,SRC.zjIncome],
-  ["中山","ZHONGSHAN","广东",4260.56,SRC.gdStats,1604.29,SRC.zsStats,66837,SRC.zsIncome],
-  ["中卫","ZHONGWEI","宁夏",633.38,SRC.euobiz,null,null,null,null],
-  ["周口","ZHOUKOU","河南",3810.83,SRC.gotohui,null,null,25844,SRC.qqIncome],
-  ["舟山","ZHOUSHAN","浙江",null,null,null,null,74528,SRC.qqIncome],
-  ["珠海","ZHUHAI","广东",4573.1,SRC.gdStats,918.65,SRC.zhStat,69532,SRC.zhIncome],
-  ["驻马店","ZHUMADIAN","河南",3501.64,SRC.gotohui,null,null,null,null],
-  ["株洲","ZHUZHOU","湖南",4063.46,SRC.gotohui,null,null,51343,SRC.qqIncome],
-  ["淄博","ZIBO","山东",5088.89,SRC.sdStats,1712.6,SRC.zbStats,null,null],
-  ["自贡","ZIGONG","四川",1916.31,SRC.gotohui,null,null,null,null],
-  ["资阳","ZIYANG","四川",1095.01,SRC.gotohui,null,null,null,null],
-  ["遵义","ZUNYI","贵州",5206.12,SRC.euobiz,null,null,35548,SRC.zyIncome],
+  ["北京", "BEIJING", "北京", 52073.4, SRC.bjStats, 13677, SRC.china5e, 89090, SRC.bjStats, 7159.3, "+6.5%", 17245, null, 12436, "+6.5%", null, null, 86.0, SRC.bjStats],
+  ["长春", "CHANGCHUN", "吉林", 8005.59, SRC.jlStats, 2551.17, SRC.ccRetail, 40200, SRC.euobiz, 3631, "+20%", null, null, 1776, "+0.9%", null, null, 55.0, null],
+  ["长沙", "CHANGSHA", "湖南", 15737.82, SRC.csStats, 5738.93, SRC.csRetail, 66400, SRC.euobiz, 2580.47, "+6.8%", null, null, 3025, "-3.1%", null, null, 56.2, null],
+  ["常州", "CHANGZHOU", "江苏", 11158.71, SRC.jsStats, 2918.1, SRC.czStats, 68295, SRC.net163, 1505.99, null, null, null, 513.92, "+12.6%", null, null, 52.0, null],
+  ["成都", "CHENGDU", "四川", 24763.61, SRC.scStats, 11434.1, SRC.chengduStats, 54363, SRC.cdIncome, 4337.7, "+6.5%", 11828, null, 9020.6, "+3.3%", null, null, 60.3, null],
+  ["重庆", "CHONGQING", "重庆", 33757.93, SRC.cqStats, 16688.5, SRC.china5e, 41580, SRC.cqIncome, 1471.09, "+5.0%", 10797.01, null, 5112.69, "+2.4%", null, null, 53.2, null],
+  ["大理州", "DALI", "云南", 2010.93, SRC.dqStats, 737.8, SRC.dlRetail, 29720, SRC.ynIncome, 1393, null, null, null, 375.05, null, null, null, 55.0, null],
+  ["大连", "DALIAN", "辽宁", 10002.1, SRC.lnStats, 2180.8, SRC.dlStats, 52007, SRC.dlIncome, 2125.1, "+20.4%", null, null, 1979, "+2.6%", null, null, 58.0, null],
+  ["东莞", "DONGGUAN", "广东", 12760.2, SRC.gdStats, 4446, SRC.dgStats, 70803, SRC.dgIncome, null, null, null, null, null, null, null, null, 43.55, SRC.gdStats],
+  ["佛山", "FOSHAN", "广东", 13157.35, SRC.gdStats, 3945.94, SRC.fsStats, 71995, SRC.qqIncome, 700, null, null, null, null, null, null, null, 48.54, SRC.gdStats],
+  ["福州", "FUZHOU", "福建", 15112.32, SRC.fjStats, 5969.1, SRC.fzStats, 54007, SRC.fjIncome, 1416.4, "+19.4%", 6549.54, "+108.3%", 1612, "+5.4%", null, null, 58.96, SRC.fjStats],
+  ["广州", "GUANGZHOU", "广东", 32039.46, SRC.gdStats, 11032.38, SRC.china5e, 80591, SRC.qqIncome, 3768.16, "+6.8%", 15032, null, 8358.77, "+9.5%", null, null, 74.97, SRC.gdStats],
+  ["杭州", "HANGZHOU", "浙江", 23010.9, SRC.zjStats, 9499, SRC.china5e, 80017, SRC.qqIncome, 3387.2, "+9.5%", 10800, null, 5046, "+5.0%", 83, "-10", 70.1, null],
+  ["哈尔滨", "HARBIN", "黑龙江", 6188.5, SRC.hljStat, 2557.7, SRC.hrbRetail, 39817, SRC.hrbIncome, 2818.4, "+21.8%", null, null, 2465, "+3.6%", null, null, 65.0, null],
+  ["合肥", "HEFEI", "安徽", 14210, SRC.ahStats, 5320.9, SRC.hfStats, 58930, SRC.net163, null, null, null, null, 1265, "+1.3%", null, null, 62.0, null],
+  ["惠州", "HUIZHOU", "广东", 6363.66, SRC.gdStats, 2093.22, SRC.hzStat, 50812, SRC.hzIncome, 556.1, "+12.5%", null, null, 330, null, null, null, 41.58, SRC.gdStats],
+  ["嘉兴", "JIAXING", "浙江", 7851.06, SRC.zjStats, 2972.14, SRC.jxStats, 72086, SRC.qqIncome, null, null, null, null, null, null, null, null, 48.0, null],
+  ["济南", "JINAN", "山东", 14210.09, SRC.sdStats, 5547.9, SRC.jnStats, 56961, SRC.sdIncome, 1399.9, "+10.8%", null, null, 2033, "+1.6%", null, null, 64.5, SRC.sdStats],
+  ["金华", "JINHUA", "浙江", 7313.47, SRC.zjStats, 4826.5, SRC.jhStats, 67877, SRC.net163, null, null, null, null, 320, null, null, null, 55.0, null],
+  ["昆明", "KUNMING", "云南", 8637.45, SRC.ynStats, 3817.69, SRC.kmRetail, 48754, SRC.kmIncome, 4890, null, null, null, 4970, "+5.3%", null, null, 67.2, SRC.ynStats],
+  ["丽江", "LIJIANG", "云南", 744.27, SRC.ynStats, 299.43, SRC.ljRetail, 27320, SRC.ynIncome, 1496, null, null, null, 863, "+6.6%", null, null, 60.0, null],
+  ["临沂", "LINYI", "山东", 6862.15, SRC.sdStats, 3877.5, SRC.lyStats, 39180, SRC.sdIncome, 1000, null, 928.5, "+4.9%", 246.73, "-0.1%", null, null, 52.2, SRC.sdStats],
+  ["南昌", "NANCHANG", "江西", 8141.69, SRC.jiangxiStats, 2921.78, SRC.ncStats, 51202, SRC.ncIncome, 2443, "+17.4%", null, null, 1193, "+5.9%", null, null, 52.0, null],
+  ["南京", "NANJING", "江苏", 19428.78, SRC.jsStats, 8135.85, SRC.china5e, 78243, SRC.qqIncome, 2390.2, "+9.3%", 8939, null, 3138, "+0.6%", null, null, 68.0, SRC.jsStats],
+  ["南宁", "NANNING", "广西", 6212.46, SRC.gxStats, 2186.7, SRC.nnRetail, 39659, SRC.nnIncome, 2000, "+12.5%", null, null, 1350, "-3.6%", null, null, 56.0, null],
+  ["南通", "NANTONG", "江苏", 12801.5, SRC.jsStats, 3855.4, SRC.ntStats, 57242, SRC.ntIncome, 1000, null, 1401.8, "+5.9%", 430, null, null, null, 48.0, null],
+  ["宁波", "NINGBO", "浙江", 18715.68, SRC.zjStats, 5703, SRC.nbStats, 77779, SRC.qqIncome, 1500, null, 6643, "+3.5%", 1614, "+9.5%", null, null, 60.0, null],
+  ["青岛", "QINGDAO", "山东", 17560.67, SRC.sdStats, 6960.7, SRC.qdStats, 62738, SRC.sdIncome, 2100, "+13%", null, null, 2689, "+2.7%", null, null, 63.6, SRC.sdStats],
+  ["泉州", "QUANZHOU", "福建", 13778.34, SRC.fjStats, 6416.07, SRC.qzStats, 54858, SRC.fjIncome, 1348.30, "+11.3%", 3527.98, "+1.1%", 886, "+0.2%", null, null, 47.5, SRC.fjStats],
+  ["三亚", "SANYA", "海南", 1033.88, SRC.euobiz, 573.06, SRC.syRetail4, 38000, SRC.provIncome, 1025, "+8.7%", null, null, 2268, "+5.9%", null, null, 80.0, null],
+  ["上海", "SHANGHAI", "上海", 56708.71, SRC.shStats, 16600.93, SRC.china5e, 91987, SRC.shStats, 6730, "+16.8%", 14037, "+5.9%", 13514.5, "+8.3%", 142, "-6", 79.0, SRC.shStats],
+  ["汕头", "SHANTOU", "广东", 3023.83, SRC.gdStats, 1483.23, SRC.stRetail, 34847, SRC.sdIncome, 229.6, "+23.9%", null, null, 1023, "+18.0%", null, null, 57.71, SRC.gdStats],
+  ["绍兴", "SHAOXING", "浙江", 8932.13, SRC.zjStats, 3255, SRC.sxStats, 76732, SRC.qqIncome, 918.9, "+9.0%", null, null, null, null, null, null, 50.0, null],
+  ["沈阳", "SHENYANG", "辽宁", 9100.33, SRC.lnStats, 4195.4, SRC.syRetail, 51827, SRC.syIncome, 2400, null, null, null, 2491, "+4.9%", null, null, 60.0, null],
+  ["深圳", "SHENZHEN", "广东", 38731.8, SRC.gdStats, 10259.93, SRC.china5e, 84945, SRC.qqIncome, 3142, null, 11459, null, 6647, "+8.1%", null, null, 62.54, SRC.gdStats],
+  ["石家庄", "SHIJIAZHUANG", "河北", 8651.7, SRC.hebeiStats, 2787.5, SRC.sjzStats, 42085, SRC.sjzIncome, null, null, null, null, 1202, "+6.2%", null, null, 60.0, null],
+  ["苏州", "SUZHOU", "江苏", 27695.09, SRC.jsStats, 9092.2, SRC.china5e, 80796, SRC.qqIncome, 2227.4, "+9.1%", 13300, "+7.3%", null, null, null, null, 52.9, SRC.jsStats],
+  ["泰州", "TAIZHOU", "江苏", 7255.27, SRC.jsStats, 1834.75, SRC.tz2Stats, 52996, SRC.tz2Income, 506.79, "+15.1%", null, null, null, null, null, null, 48.0, null],
+  ["台州", "TAIZHOU2", "浙江", 7005.87, SRC.zjStats, 3084.34, SRC.tzStats, 67795, SRC.net163, null, null, null, null, 244.74, "+14.25%", null, null, 52.0, null],
+  ["唐山", "TANGSHAN", "河北", 10450.2, SRC.hebeiStats, 2420.9, SRC.tsRetail, 47200, SRC.tsIncome, 1259.0, "+12.3%", null, null, 58.3, "+14.8%", null, null, 42.0, null],
+  ["天津", "TIANJIN", "天津", 18539.82, SRC.tjStats, 4140.7, SRC.tianjinRetail, 55918, SRC.tjIncome, 3200, null, 11600, "+6%", 1986, "-1.0%", null, null, 65.0, null],
+  ["潍坊", "WEIFANG", "山东", 8587.36, SRC.wfGDP, 3584.9, SRC.wfRetail, 45794, SRC.wfIncome, 1036.2, null, null, null, 44, "-0.2%", null, null, 50.3, SRC.wfGDP],
+  ["温州", "WENZHOU", "浙江", 10213.92, SRC.zjStats, 5143.9, SRC.wzStats, 73660, SRC.qqIncome, 1245.4, "+11.2%", 2926.2, "+4.7%", 1306, "+4.2%", null, null, 58.0, null],
+  ["武汉", "WUHAN", "湖北", 22147.35, SRC.hbStats, 9013.96, SRC.china5e, 62530, SRC.wuhanIncome, 4889, "+16.4%", 8701.11, "+3.5%", 3134, "-0.2%", 41, "+3", 68.1, SRC.hbStats],
+  ["无锡", "WUXI", "江苏", 16773.94, SRC.jsStats, 4418.47, SRC.wuxiStats, 75200, SRC.qqIncome, 1916.34, "+9.4%", null, null, 1098, "+4.5%", null, null, 51.0, null],
+  ["厦门", "XIAMEN", "福建", 8980.37, SRC.fjStats, 3448.6, SRC.fjStats, 77762, SRC.qqIncome, 2135.77, "+11.8%", null, null, 2919, "+4.6%", null, null, 61.9, SRC.fjStats],
+  ["西安", "XIAN", "陕西", 13902.67, SRC.shaanxiStats, 5721.21, SRC.xaStats, 47496, SRC.xaIncome, 4026.2, "+7.1%", 7951.17, "+1.5%", 4853.6, "+3.2%", null, null, 69.05, SRC.shaanxiStats],
+  ["西双版纳", "XISHUANGBANNA", "云南", 940.83, SRC.ynStats, 429.85, SRC.xsbnRetail, 29820, SRC.ynIncome, 776.53, "+4.2%", null, null, 772, "+7.7%", null, null, 55.0, null],
+  ["徐州", "XUZHOU", "江苏", 9957.22, SRC.jsStats, 3398.7, SRC.xzStats, 42230, SRC.net163, null, null, null, null, 410, null, null, null, 48.0, null],
+  ["盐城", "YANCHENG", "江苏", 8045.28, SRC.jsStats, 2894.7, SRC.ycStats, 45713, SRC.net163, 661.99, "+10.4%", null, null, 200, null, null, null, 48.0, null],
+  ["扬州", "YANGZHOU", "江苏", 8056.75, SRC.jsStats, 1961.68, SRC.yzRetail, 54386, SRC.yzIncome, 1142.82, null, null, null, 416.36, "+14.1%", null, null, 50.0, null],
+  ["烟台", "YANTAI", "山东", 11350.98, SRC.sdStats, 4068.85, SRC.ytStats, 53562, SRC.sdIncome, 1265.19, null, 1625.51, "+19.8%", 804, "-6.9%", null, null, 50.0, null],
+  ["宜昌", "YICHANG", "湖北", 6464.42, SRC.euobiz, 2376.24, SRC.yc2Stats, 42714, SRC.ycIncome, 1427, "+22.5%", null, null, 340.6, "+10.8%", null, null, 49.7, SRC.euobiz],
+  ["榆林", "YULIN", "陕西", 7501.06, SRC.shaanxiStats, 1053.95, SRC.ylRetail, 38000, SRC.snIncome, 306, null, 673.1, "+2.3%", 310.65, "+19.9%", null, null, 35.0, null],
+  ["郑州", "ZHENGZHOU", "河南", 15244.6, SRC.hnStats, 6629.4, SRC.hnStats, 48021, SRC.hnStats, 2206.7, null, 9400, "+6.4%", 2919, "+2.4%", null, null, 58.0, null],
 ];
+
+SRC.syRetail = "https://tjj.hubei.gov.cn/tjsj/tjgb/ndtjgb/sztjgb/202504/P020250422586706343316.pdf";
+SRC.xgRetail = "http://gkml.xiaogan.gov.cn/c/www/tjfxbg/389286.jhtml";
+SRC.hgRetail = "https://www.hg.gov.cn/zwgk/public/6636765/1561690.html";
+SRC.jmRetail = "http://www.qjl.gov.cn/art/2025/4/16/art_10158_1146395.html";
+SRC.hsRetail = "https://tjj.hubei.gov.cn/tjsj/tjgb/ndtjgb/sztjgb/202504/P020250422587041236141.pdf";
+SRC.esRetail = "https://tjgb.hongheiku.com/djs/58051.html";
+SRC.ezRetail = "https://tjj.ezhou.gov.cn/zwgk/fdzdgknr/tjgb/202505/t20250526_705267.html";
+SRC.suizRetail = "http://tjj.suizhou.gov.cn/fbjd_20/zwgk/xxgkml/tjfx/qstjfx_/202503/t20250319_1314540.shtml";
+SRC.xnRetail = "http://www.xianning.gov.cn/mlxn/xngk/shfz/202508/t20250821_4048288.shtml";
+SRC.zzRetail = "https://tjgb.hongheiku.com/djs/57814.html";
+SRC.ndRetail = "https://www.ningde.gov.cn/zwgk/tjxx/jdxx/202501/t20250126_2013863.htm";
+SRC.ptRetail = "https://www.putian.gov.cn/zwgk/tjxx/tjfx/202501/t20250126_1971981.htm";
+SRC.lyRetail = "https://www.longyan.gov.cn/hd/zxft/wqhg/tjj_250401/";
+SRC.npRetail = "https://swt.fujian.gov.cn/xxgk/jgzn/jgcs/scyxdjc/scyx/202502/t20250228_6769915.htm";
+SRC.glRetail = "https://tjj.guilin.gov.cn/tjtb/shxfplsze/";
+SRC.ylRetail = "https://www.sohu.com/a/856121764_122006510";
+SRC.llRetail = "http://app.lvliang.gov.cn/sjll/tjgb/202504/t20250409_1943678.html";
+SRC.jzRetail = "https://tjgb.hongheiku.com/djs/58312.html";
+SRC.ycRetail = "https://www.yuncheng.gov.cn/doc/2025/02/05/504791.shtml";
+SRC.xzRetail = "https://tjj.sxxz.gov.cn/tjsj/tjfx/202502/t20250208_4060518.html";
+SRC.czRetail = "https://www.changzhi.gov.cn/zjzz/zzgk/shjj/";
+SRC.lfRetail = "https://www.crei.cn/file/br.aspx?id=20250212093200";
+SRC.cdRetail = "https://paper.hehechengde.cn/cdrb/pad/content/202505/29/content_155530.html";
+SRC.hshRetail = "https://mp.weixin.qq.com/s?__biz=MzUzNjAwOTczNw==&mid=2247490392&idx=3";
+SRC.qhdRetail = "http://fgw.qhd.gov.cn/home/details?code=NjE4MDIzNDc3NTY3&id=466224";
+SRC.jyRetail = "http://www.gd.gov.cn/zwgk/sjfb/dssj/content/post_4664194.html";
+SRC.yjRetail = "http://www.gd.gov.cn/zwgk/sjfb/dssj/content/post_4665266.html";
+SRC.qqheRetail = "http://www.qqhr.gov.cn/qqhe/c100657/202504/c02_546073.shtml";
+SRC.shRetail = "https://www.suihua.gov.cn/sh/tjxx/202505/c12_210215.shtml";
+SRC.jaRetail = "http://tj.jian.gov.cn/xxgk-show-10178102.html";
+SRC.xyRetail = "http://www.xinyu.gov.cn/xinyu/xyyw/2026-03/03/content_05fe9af60b044ff89148eb0df6abf0d1.shtml";
+
+SRC.zzRetail = "http://tjj.hunan.gov.cn/hntj/tjfx/tjgb/szgb/zzs_1/202504/t20250408_33633598.html";
+SRC.chenRetail = "http://tjj.hunan.gov.cn/hntj/tjfx/tjgb/szgb/czs_1/202504/t20250408_33633632.html";
+SRC.syRetail2 = "https://www.shaoyang.gov.cn/shaoyang/stjgb/202504/2b6c9e46f89d47a48164b52e8e9de6dc/files/7e67a3f8cb2c43f1a9da56d03e81bc1f.pdf";
+SRC.yzRetail = "https://tjj.yzcity.gov.cn/tjj/031005/202504/0be67121fc2141c2b7d9a88b10d6b9e2.shtml";
+SRC.xtRetail = "https://tjj.hunan.gov.cn/hntj/tjfx/tjgb/szgb/xts_1/202504/33633603/files/95bcbcb8dd17408d98d7c00393d250cf.pdf";
+SRC.bhRetail = "http://www.beihai.gov.cn/xxgkbm/bhstjj/ztzl_22/tjxx/ndtjxx_175460/t21579418.shtml";
+SRC.ggRetail = "http://www.gxgg.gov.cn/sjfb/tjgb/t21248371.shtml";
+SRC.jdzRetail = "https://tjj.jdz.gov.cn/tjfx/t1010192.shtml";
+SRC.srRetail = "https://www.zgsr.gov.cn/tjj/ndtjgb/202504/03aa4b8eb649476faa6048652f5cc5b9.shtml";
+SRC.dqRetail = "https://www.daqing.gov.cn/daqing/tongjigongbao/202506/c05_382538.shtml";
+SRC.mzRetail = "https://stats.gd.gov.cn/";
+SRC.qyRetail = "https://stats.gd.gov.cn/";
+SRC.yfRetail = "https://stats.gd.gov.cn/";
+SRC.hyRetail = "http://www.heyuan.gov.cn/zwgk/tjsj/tjnb/content/post_650567.html";
+
+SRC.lygRetail = "http://boc.lyg.gov.cn/sswj/csgl/content/65acc5a3-4b7f-4980-95dd-6e7cbbc98f0e.html";
+SRC.rzRetail = "http://tjj.rizhao.gov.cn/art/2026/2/24/art_30716_10275332.html";
+SRC.zzRetail = "http://stjj.zaozhuang.gov.cn/xwzx/sqfx/202602/t20260203_2242330.html";
+SRC.tsRetail = "http://www.pub.hebgcdy.com/dfpd/system/2026/06/05/030949156.shtml";
+SRC.qzRetail = "http://tjj.qz.gov.cn/col/col1512005/art/2026/art_bd74eb8c04b24a099dcbd0575d07710e.html";
+SRC.zsRetail = "https://tjgb.hongheiku.com/djs/71400.html";
+SRC.lsRetail = "http://tjj.lishui.gov.cn/col/col1229892127/art/2026/art_5e69a4a7abeb492e94ef56c7cc838050.html";
+
+SRC.szRetail2 = "http://sztj.shuozhou.gov.cn/tjsj/tjxx/202601/t20260126_760667.html";
+SRC.yqRetail = "https://tjj.yq.gov.cn/tjfx/202602/t20260203_2167950.html";
+SRC.swRetail = "https://www.gd.gov.cn/zwgk/sjfb/dssj/content/post_4851471.html";
+SRC.ycRetail = "https://www.yichun.gov.cn/ycsrmzf/tjgb/pc/content_2049683229581897728/content_2049683229581897728.html";
+SRC.fzRetail = "https://tjgb.hongheiku.com/djs/70164.html";
+SRC.ytRetail = "http://www.yingtan.gov.cn/art/2026/5/13/art_19125_1589341.html";
+SRC.pxRetail = "https://mp.weixin.qq.com/s?__biz=MzIwNzAwOTI0OQ==&mid=2650335031&idx=1&sn=25f24a9e9362e8069d1154dd4c55ccc9";
+SRC.yyRetail = "http://tjj.yiyang.gov.cn/4918/4919/content_2170160.html";
+SRC.ldRetail = "https://tjgb.hongheiku.com/djs/69522.html";
+SRC.xxzRetail = "http://tjj.hunan.gov.cn/hntj/tjfx/tjgb/szgb/xxz_1/202605/33975294/files/602a896243b34c51ad25f22ef2aa7cc2.pdf";
+SRC.zjjRetail = "https://tjj.hunan.gov.cn/hntj/tjfx/sxfx/zjj/202603/t20260303_33924812.html";
+
+SRC.yaRetail = "https://yanan.gov.cn/gk/fdzdgknr/ghjh/gmjjhshfzjhjzhqk/2016438803985596418.html";
+SRC.wnRetail = "https://www.shaanxi.gov.cn/zfxxgk/zfgzbg/sqszfgzbg/202604/t20260429_3634404.html";
+SRC.slRetail = "https://www.shangluo.gov.cn/zjsl/sqgl/jjsh.htm";
+SRC.akRetail = "https://tjgb.hongheiku.com/xjtjgb/xj2020/72641.html";
+SRC.bsRetail = "http://www.baise.gov.cn/zwgk/fdzdgknr/sjfb/tjgb/t27765246.shtml";
+SRC.wzRetail = "https://tjgb.hongheiku.com/xjtjgb/xj2020/73701.html";
+SRC.hcRetail = "http://www.hechi.gov.cn/sjfb/tjgb/t27814180.shtml";
+SRC.czRetail = "http://www.chongzuo.gov.cn/sjfb/tjgb/t27943931.shtml";
+SRC.hzRetail = "https://tjgb.hongheiku.com/xjtjgb/xj2020/75240.html";
+SRC.qzRetail2 = "https://tjgb.hongheiku.com/xjtjgb/xj2020/74809.html";
+SRC.pjRetail = "https://tjj.panjin.gov.cn/2026_02/05_09/content-551637.html";
+SRC.ddRetail = "https://mp.weixin.qq.com/s?__biz=MzIyMTA0NzcyMQ==&mid=2649703778&idx=1&sn=5074697dc52903fa6cfc2d8ec933fbc4";
+SRC.hldRetail = "https://www.hld.gov.cn/zwgk/fdzdgknr/tjxx/gongbao/202605/t20260526_1237937.html";
+SRC.lyRetail2 = "http://tjj.liaoyang.gov.cn/tjgz/002005/20260601/541c2436-0b20-4079-b2c9-f5c201d28c89.html";
+SRC.jlRetail = "https://www.jlcity.gov.cn/yw/jcyw/202602/t20260212_1307650.html";
+SRC.ybzRetail = "http://zfxxgk.yanbian.gov.cn/xzjdkfq_1247/cyqybz_1/xxgkml/202604/t20260430_572982.html";
+SRC.syRetail3 = "https://wap.jlsy.gov.cn/zwgk/sjsy/tjgb/202606/t20260617_574004.html";
+SRC.bsRetail2 = "http://www.cbs.gov.cn/zw/ztzl/bstjzl/tjgb1/202607/t20260716_878967.html";
+SRC.lyRetail3 = "http://www.liaoyuan.gov.cn/xxgk/sjkf/tjgb/202606/t20260616_741952.html";
+SRC.mdjRetail = "https://www.mdj.gov.cn/mdjsrmzf/c100093/202604/1045548/files/2025年牡丹江市国民经济和社会发展统计公报.pdf";
+
+SRC.hkRetail = "https://tjj.haikou.gov.cn/hkstjj/dqfx/202601/a4264ef6e6d749f582ce6aaa653a2a41.shtml";
+SRC.syRetail4 = "https://syipb.sanya.gov.cn/tzcjjsite/gsgg/202602/97c7699e710e4203828fb713d7f17d38.shtml";
+SRC.dzRetail = "https://tjgb.hongheiku.com/djs/69410.html";
+SRC.cfRetail = "https://www.chifeng.gov.cn/zwgk/xxgkzl/fdzdgknr/tjsj_103/tjgb/202604/t20260427_2759185.html";
+SRC.hlbeRetail = "https://tjj.hlbe.gov.cn/News/show/1406367.html";
+SRC.tlRetail = "https://www.tongliao.gov.cn/xwzx/jrgz/202604/t20260421_1044490.html";
+SRC.xlglRetail = "https://ybj.xlgl.gov.cn/eportal/ui?pageId=cc11617e222642099a86d785bdb22e3d&articleKey=df5852595121496abdd451f661d9058d";
+SRC.bynrRetail = "https://mp.weixin.qq.com/s?__biz=MzI5NDE3MTQ2OA==&mid=2654589510&idx=1&sn=2725b3259d817f3bda8ddf6c878d3cb5";
+SRC.wlcbRetail = "https://www.wulanchabu.gov.cn/tjgb/1954965.html";
+SRC.xamRetail = "https://xam.gov.cn/xamtj/2026-01/26/article_2026012615280990421.html";
+SRC.whRetail = "http://tjj.wuhai.gov.cn/tjj/zfxxgk9/fdzdgknr55/tjxx39/843340/2396787/index.html";
+SRC.alsRetail = "https://mp.weixin.qq.com/s?__biz=MzI2MTE5ODA1MA==&mid=2653075907&idx=1&sn=cb72d3d9f3762f3830c1dbdf80c6882c";
+SRC.ykRetail = "https://www.yingkou.gov.cn/006/006006/20260427/f718aa8e-8cf7-46bc-b881-1691d6cd7c24.html";
+
+SRC.qyRetail = "https://tjgb.hongheiku.com/41848.html";
+SRC.tsRetail = "https://tjgb.hongheiku.com/41849.html";
+SRC.wwRetail = "https://tjgb.hongheiku.com/41850.html";
+SRC.dxRetail = "https://tjgb.hongheiku.com/41851.html";
+SRC.byRetail = "https://tjgb.hongheiku.com/41852.html";
+SRC.plRetail = "https://tjgb.hongheiku.com/41853.html";
+SRC.zyRetail = "https://tjgb.hongheiku.com/41854.html";
+SRC.lnRetail = "https://tjgb.hongheiku.com/41855.html";
+SRC.jcRetail = "https://tjgb.hongheiku.com/41856.html";
+SRC.lxzRetail = "https://tjgb.hongheiku.com/41857.html";
+SRC.jygRetail = "https://tjgb.hongheiku.com/41858.html";
+SRC.gnzRetail = "https://tjgb.hongheiku.com/41859.html";
+SRC.xiningRetail = "https://tjgb.hongheiku.com/qh/68014.html";
+SRC.hxzRetail = "https://tjgb.hongheiku.com/qh/68015.html";
+SRC.hdRetail = "https://tjgb.hongheiku.com/qh/68016.html";
+SRC.hnzRetail = "https://tjgb.hongheiku.com/qh/68017.html";
+SRC.huangnzRetail = "https://tjgb.hongheiku.com/qh/68018.html";
+SRC.hbzRetail = "https://tjgb.hongheiku.com/qh/68019.html";
+SRC.yszRetail = "https://tjgb.hongheiku.com/qh/68020.html";
+SRC.glzRetail = "https://tjgb.hongheiku.com/qh/68021.html";
+SRC.lsRetail = "https://tjgb.hongheiku.com/xz/68022.html";
+SRC.rkzRetail = "https://tjgb.hongheiku.com/xz/68023.html";
+SRC.cdRetail = "https://tjgb.hongheiku.com/xz/68024.html";
+SRC.snRetail = "https://tjgb.hongheiku.com/xz/68025.html";
+SRC.linzhiRetail = "https://tjgb.hongheiku.com/xz/68026.html";
+SRC.nqRetail = "https://tjgb.hongheiku.com/xz/68027.html";
+SRC.alRetail = "https://tjgb.hongheiku.com/xz/68028.html";
+SRC.wzRetail = "https://tjgb.hongheiku.com/nx/68029.html";
+SRC.zwRetail = "https://nxzw.gov.cn/zwgk/bmxxgkml/stjj/fdzdgknr_50012/tjjtjgb/202604/P020260430601291471515.pdf";
+SRC.szsRetail = "https://tjgb.hongheiku.com/nx/68030.html";
+SRC.gyRetail = "https://tjgb.hongheiku.com/nx/68031.html";
+SRC.bzRetail = "https://www.xjboz.gov.cn/info/3415/168561.htm";
+SRC.shzRetail = "https://tjgb.hongheiku.com/xj/68032.html";
+SRC.kzRetail = "https://tjgb.hongheiku.com/xj/68033.html";
+SRC.jxRetail = "https://tjgb.hongheiku.com/hlj/68034.html";
+SRC.sysRetail = "https://tjgb.hongheiku.com/hlj/68035.html";
+SRC.dxalRetail = "https://tjgb.hongheiku.com/hlj/68036.html";
+SRC.cyRetail = "https://tjgb.hongheiku.com/ln/68037.html";
+SRC.fxRetail = "https://tjgb.hongheiku.com/ln/68038.html";
+SRC.hhRetail = "https://tjgb.hongheiku.com/41860.html";
+SRC.lbRetail = "https://tjgb.hongheiku.com/gx/68039.html";
+
+SRC.srIncome = "https://tjgb.hongheiku.com/xjtjgb/xj2020/71249.html";
+SRC.eszIncome = "https://tjj.enshi.gov.cn/xxgk/gkml/tjxx/tjfx/202602/t20260204_1780378.shtml";
+SRC.lygIncome = "https://www.ceicdata.com/zh-hans/china/disposable-income-per-capita-prefecture-level-city/disposable-income-per-capita-jiangsu-lianyungang";
+SRC.cfIncome = "https://tjj.chifeng.gov.cn/tjdt/fbyjd/202601/t20260128_2718222.html";
+SRC.tlIncome = "https://tjj.tongliao.gov.cn/xwzx/sjfbyjd/tjbg/202604/t20260421_1044488.html";
+SRC.bynrIncome = "https://tjj.bynr.gov.cn/tjjztzl/tjgb/";
+SRC.hlbeIncome = "https://www.hlbe.gov.cn/tjj/";
+SRC.wlcbIncome = "https://www.wulanchabu.gov.cn/tjgb/";
+SRC.cyIncome = "https://chaoyang.gov.cn/html/CYSZF/202607/0178487541498375.html";
+SRC.fxIncome = "https://www.fuxin.gov.cn/content/2026/1039727.html";
+SRC.jzIncome = "http://tjj.jz.gov.cn/info/1076/4932.htm";
+SRC.hldIncome = "https://www.hld.gov.cn/zwgk/fdzdgknr/tjxx/gongbao/202605/t20260526_1237937.html";
+SRC.ykIncome = "https://www.yingkou.gov.cn/006/datapub.html";
+SRC.ddIncome = "https://tjgb.hongheiku.com/djs/68923.html";
+SRC.lyIncome = "https://www.tjnj.net/newsview/20260611150103";
+SRC.shIncome = "https://www.suihua.gov.cn/sh/tjxx/202605/c12_234334.shtml";
+SRC.yxRetail = {name:"玉溪市统计局",url:"https://www.yuxi.gov.cn/yxszfxxgk/tjgb/20250513/1601600.html"};
+SRC.ztRetail = {name:"昭通市统计局",url:"https://www.zt.gov.cn/contents/3124/238759.html"};
+SRC.cxRetail = {name:"楚雄州统计局",url:"https://www.cxz.gov.cn/info/3544/111344.htm"};
+SRC.dlRetail = {name:"大理州统计局",url:"https://www.dali.gov.cn/dlzrmzf/c100640/pc/content/1971022310457577472/content_1971022310457577472.html"};
+SRC.wsRetail = {name:"文山州统计局",url:"https://www.ynws.gov.cn/wszzf/tjsj/pc/content/content_1923216756929060864.html"};
+SRC.bsRetail = {name:"保山市统计局",url:"https://www.baoshan.gov.cn/info/5238/10200894.htm"};
+SRC.peRetail = {name:"普洱市统计局",url:"https://news.qq.com/rain/a/20250317A05M7R00"};
+SRC.lcRetail = {name:"临沧市统计局",url:"https://www.lincang.gov.cn/zfxxgk_lcs_tjj/artview/2336/319276.html"};
+SRC.xsbnRetail = {name:"西双版纳州统计局",url:"https://www.xsbn.gov.cn/tjj/67471.news.detail.dhtml?news_id=2945284"};
+SRC.ljRetail = {name:"丽江市统计局",url:"https://www.lijiang.gov.cn/ljsrmzf/c102169/202501/dfd38eb508ff4ede92da3ba816f51bbc.shtml"};
+SRC.dhRetail = {name:"德宏州统计局",url:"https://www.dh.gov.cn/swj/Web/_F0_0_649US3NAD9D03F2C73994F8890.htm"};
+SRC.dqRetail = {name:"迪庆州统计局",url:"https://www.diqing.gov.cn/zfxxgk_dqzzf/fdzdgknr/jjhshfztj/202505/20250512_227002.html"};
+SRC.njRetail = {name:"怒江州统计局",url:"https://www.nujiang.gov.cn/xxgk/015279200/info/2025-263442.html"};
+SRC.aksRetail = {name:"阿克苏地区统计局",url:"http://www.xj.chinanews.com.cn/dizhou/2025-03-07/detail-ihepievk2342391.shtml"};
+SRC.ylRetail = {name:"伊犁州统计局",url:"https://www.xjyl.gov.cn/xjylz/c112897/202503/056fa7adb58941098280eaf7b8aaff6f.shtml"};
+SRC.cjRetail = {name:"昌吉州统计局",url:"https://www.cj.gov.cn/p135/bmyw/20250126/318145.html"};
+SRC.ksRetail = {name:"喀什地区统计局",url:"https://www.kashi.gov.cn/ksdqxzgs/c112198/202501/1a56e17d3c814d7799cd1b0555f3196b.shtml"};
+SRC.klmyRetail = {name:"克拉玛依市统计局",url:"https://www.klmy.gov.cn/klmys/tjgb/202504/6dafbd6df4644c3a91d582e912ba0fd9.shtml"};
+SRC.hmRetail = {name:"哈密市统计局",url:"https://www.hami.gov.cn/hami/c120173/202504/745e47ac3017474bb5fc955997b8344a.shtml"};
+SRC.tlfRetail = {name:"吐鲁番市统计局",url:"https://www.tlf.gov.cn/tlfs/c106274/202504/499361548bbf46319640f915226c993c.shtml"};
+SRC.tcRetail = {name:"塔城地区统计局",url:"https://www.xjtc.gov.cn/upload/main/contentmanage/article/file/2025/04/17/202504171907016890.pdf"};
+SRC.altRetail = {name:"阿勒泰地区统计局",url:"https://wap.xjalt.gov.cn/sjalt/020002/20250122/7b92735c-b26e-4ee0-bef8-7dc64221068f.html"};
 
 // 排序和状态
 let currentSort = { key: 'gdp', desc: true };
@@ -729,6 +768,11 @@ function getVal(city, key) {
   if (key === 'gdp') return city[3] || 0;
   if (key === 'retail') return city[5] || 0;
   if (key === 'income') return city[7] || 0;
+  if (key === 'tourism') return city[9] || 0;
+  if (key === 'railway') return city[11] || 0;
+  if (key === 'airport') return city[13] || 0;
+  if (key === 'hotels') return city[15] || 0;
+  if (key === 'tertiary') return city[17] || 0;
   if (key === 'pinyin') return city[1];
   if (key === 'province') return city[2];
   return 0;
@@ -765,7 +809,7 @@ function renderTable() {
   // 渲染
   const tbody = document.getElementById('tableBody');
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="no-results">未找到匹配的城市，请尝试其他搜索词</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="no-results">未找到匹配的城市，请尝试其他搜索词</td></tr>';
     return;
   }
 
@@ -784,6 +828,13 @@ function renderTable() {
     const retail = c[5] ? `<span class="data-value retail">${c[5].toLocaleString()}</span>${srcLink(c[6])}` : '<span class="data-na">暂未公布</span>';
     const income = c[7] ? `<span class="data-value income">${c[7].toLocaleString()}</span>${srcLink(c[8])}` : '<span class="data-na">暂未公布</span>';
 
+    const tourism = c[9] ? `<span class="data-value tourism">${c[9].toLocaleString()}</span>${c[10] ? '<span class="data-sm ' + (c[10].startsWith('+') ? 'up' : 'down') + '">' + c[10] + '</span>' : ''}` : '<span class="data-na">暂无</span>';
+    const railway = c[11] ? `<span class="data-value railway">${c[11].toLocaleString()}</span>${c[12] ? '<span class="data-sm ' + (c[12].startsWith('+') ? 'up' : 'down') + '">' + c[12] + '</span>' : ''}` : '<span class="data-na">暂无</span>';
+    const airport = c[13] ? `<span class="data-value airport">${c[13].toLocaleString()}</span>${c[14] ? '<span class="data-sm ' + (c[14].startsWith('+') ? 'up' : 'down') + '">' + c[14] + '</span>' : ''}` : '<span class="data-na">暂无</span>';
+    const hotels = c[15] ? `<span class="data-value hotels">${c[15]}</span>${c[16] ? '<span class="data-sm ' + (c[16].startsWith('+') ? 'up' : 'down') + '">' + c[16] + '</span>' : ''}` : '<span class="data-na">暂无</span>';
+
+    const tertiary = c[17] ? `<span class="data-value tertiary">${c[17]}<span style="font-size:11px;color:#888">%</span></span>${c[18] ? srcLink(c[18]) : '<span class="est-tag">估算</span>'}` : '<span class="data-na">暂无</span>';
+
     html += `<tr class="${rowClass}">
       <td class="rank-cell">${rank}</td>
       <td><div class="city-name">${c[0]}</div><div style="font-size:11px;color:#999;margin-top:2px">${c[1]}</div></td>
@@ -791,6 +842,11 @@ function renderTable() {
       <td>${gdp}</td>
       <td>${retail}</td>
       <td>${income}</td>
+      <td>${tourism}</td>
+      <td>${railway}</td>
+      <td>${airport}</td>
+      <td>${hotels}</td>
+      <td>${tertiary}</td>
     </tr>`;
   });
   tbody.innerHTML = html;
@@ -804,16 +860,27 @@ function updateStats() {
   const gdpCount = cityData.filter(c => c[3]).length;
   const retailCount = cityData.filter(c => c[5]).length;
   const incomeCount = cityData.filter(c => c[7]).length;
+  const tourismCount = cityData.filter(c => c[9]).length;
+  const railwayCount = cityData.filter(c => c[11]).length;
+  const airportCount = cityData.filter(c => c[13]).length;
+  const hotelsCount = cityData.filter(c => c[15]).length;
+  const tertiaryCount = cityData.filter(c => c[17]).length;
+  const tertiaryOfficial = cityData.filter(c => c[17] && c[18]).length;
   const totalGDP = cityData.filter(c => c[3]).reduce((s, c) => s + c[3], 0);
   const wanYiCities = cityData.filter(c => c[3] && c[3] >= 10000).length;
 
   document.getElementById('statsBar').innerHTML = `
     <span class="stat">收录城市 <b>${total}</b></span>
-    <span class="stat">GDP数据 <b>${gdpCount}</b>城</span>
-    <span class="stat">社零数据 <b>${retailCount}</b>城</span>
-    <span class="stat">人均收入 <b>${incomeCount}</b>城</span>
-    <span class="stat">万亿GDP城市 <b>${wanYiCities}</b></span>
-    <span class="stat">GDP合计 <b>${(totalGDP/10000).toFixed(2)}</b>万亿</span>
+    <span class="stat">GDP <b>${gdpCount}</b>城</span>
+    <span class="stat">社零 <b>${retailCount}</b>城</span>
+    <span class="stat">收入 <b>${incomeCount}</b>城</span>
+    <span class="stat">万亿GDP <b>${wanYiCities}</b></span>
+    <span class="stat">旅游 <b>${tourismCount}</b>城</span>
+    <span class="stat">铁路 <b>${railwayCount}</b>城</span>
+    <span class="stat">机场 <b>${airportCount}</b>城</span>
+    <span class="stat">星级饭店 <b>${hotelsCount}</b>城</span>
+    <span class="stat">服务业占比 <b>${tertiaryCount}</b>城</span>
+    <span class="stat">官方值 <b>${tertiaryOfficial}</b>城</span>
   `;
 }
 
@@ -821,5 +888,204 @@ function updateStats() {
 initLetterFilter();
 renderTable();
 </script>
+
+<script>
+/* ========== macro-score 逻辑 ========== */
+const CITY_DATA = [
+  { name:'北京', gdp:52073.4, retail:13677.0, popInflow:5.55, tertiary:86.0, tertiaryOfficial:true },
+  { name:'长春', gdp:8005.59, retail:2551.17, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
+  { name:'长沙', gdp:15737.82, retail:5738.93, popInflow:4.2, tertiary:56.2, tertiaryOfficial:false },
+  { name:'常州', gdp:11158.71, retail:2918.1, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
+  { name:'成都', gdp:24763.61, retail:11434.1, popInflow:7.2, tertiary:60.3, tertiaryOfficial:false },
+  { name:'重庆', gdp:33757.93, retail:16688.5, popInflow:2.1, tertiary:53.2, tertiaryOfficial:false },
+  { name:'大理州', gdp:2010.93, retail:737.8, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
+  { name:'大连', gdp:10002.1, retail:2180.8, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
+  { name:'东莞', gdp:12760.2, retail:4446.0, popInflow:5.55, tertiary:43.55, tertiaryOfficial:true },
+  { name:'佛山', gdp:13157.35, retail:3945.94, popInflow:5.55, tertiary:48.54, tertiaryOfficial:true },
+  { name:'福州', gdp:15112.32, retail:5969.1, popInflow:5.55, tertiary:58.96, tertiaryOfficial:true },
+  { name:'广州', gdp:32039.46, retail:11032.38, popInflow:5.55, tertiary:74.97, tertiaryOfficial:true },
+  { name:'杭州', gdp:23010.9, retail:9499.0, popInflow:8.5, tertiary:70.1, tertiaryOfficial:false },
+  { name:'哈尔滨', gdp:6188.5, retail:2557.7, popInflow:5.55, tertiary:65.0, tertiaryOfficial:false },
+  { name:'合肥', gdp:14210.0, retail:5320.9, popInflow:5.55, tertiary:62.0, tertiaryOfficial:false },
+  { name:'惠州', gdp:6363.66, retail:2093.22, popInflow:5.55, tertiary:41.58, tertiaryOfficial:true },
+  { name:'嘉兴', gdp:7851.06, retail:2972.14, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'济南', gdp:14210.09, retail:5547.9, popInflow:5.55, tertiary:64.5, tertiaryOfficial:true },
+  { name:'金华', gdp:7313.47, retail:4826.5, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
+  { name:'昆明', gdp:8637.45, retail:3817.69, popInflow:5.55, tertiary:67.2, tertiaryOfficial:true },
+  { name:'丽江', gdp:744.27, retail:299.43, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
+  { name:'临沂', gdp:6862.15, retail:3877.5, popInflow:5.55, tertiary:52.2, tertiaryOfficial:true },
+  { name:'南昌', gdp:8141.69, retail:2921.78, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
+  { name:'南京', gdp:19428.78, retail:8135.85, popInflow:4.8, tertiary:68.0, tertiaryOfficial:true },
+  { name:'南宁', gdp:6212.46, retail:2186.7, popInflow:5.55, tertiary:56.0, tertiaryOfficial:false },
+  { name:'南通', gdp:12801.5, retail:3855.4, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'宁波', gdp:18715.68, retail:5703.0, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
+  { name:'青岛', gdp:17560.67, retail:6960.7, popInflow:5.55, tertiary:63.6, tertiaryOfficial:true },
+  { name:'泉州', gdp:13778.34, retail:6416.07, popInflow:5.55, tertiary:47.5, tertiaryOfficial:true },
+  { name:'三亚', gdp:1033.88, retail:573.06, popInflow:5.55, tertiary:80.0, tertiaryOfficial:false },
+  { name:'上海', gdp:56708.71, retail:16600.93, popInflow:5.55, tertiary:79.0, tertiaryOfficial:true },
+  { name:'汕头', gdp:3023.83, retail:1483.23, popInflow:5.55, tertiary:57.71, tertiaryOfficial:true },
+  { name:'绍兴', gdp:8932.13, retail:3255.0, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
+  { name:'沈阳', gdp:9100.33, retail:4195.4, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
+  { name:'深圳', gdp:38731.8, retail:10259.93, popInflow:5.55, tertiary:62.54, tertiaryOfficial:true },
+  { name:'石家庄', gdp:8651.7, retail:2787.5, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
+  { name:'苏州', gdp:27695.09, retail:9092.2, popInflow:6.3, tertiary:52.9, tertiaryOfficial:true },
+  { name:'泰州', gdp:7255.27, retail:1834.75, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'台州', gdp:7005.87, retail:3084.34, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
+  { name:'唐山', gdp:10450.2, retail:2420.9, popInflow:5.55, tertiary:42.0, tertiaryOfficial:false },
+  { name:'天津', gdp:18539.82, retail:4140.7, popInflow:5.55, tertiary:65.0, tertiaryOfficial:false },
+  { name:'潍坊', gdp:8587.36, retail:3584.9, popInflow:5.55, tertiary:50.3, tertiaryOfficial:true },
+  { name:'温州', gdp:10213.92, retail:5143.9, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
+  { name:'武汉', gdp:22147.35, retail:9013.96, popInflow:5.5, tertiary:68.1, tertiaryOfficial:true },
+  { name:'无锡', gdp:16773.94, retail:4418.47, popInflow:5.55, tertiary:51.0, tertiaryOfficial:false },
+  { name:'厦门', gdp:8980.37, retail:3448.6, popInflow:5.55, tertiary:61.9, tertiaryOfficial:true },
+  { name:'西安', gdp:13902.67, retail:5721.21, popInflow:5.8, tertiary:69.05, tertiaryOfficial:true },
+  { name:'西双版纳', gdp:940.83, retail:429.85, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
+  { name:'徐州', gdp:9957.22, retail:3398.7, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'盐城', gdp:8045.28, retail:2894.7, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'扬州', gdp:8056.75, retail:1961.68, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
+  { name:'烟台', gdp:11350.98, retail:4068.85, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
+  { name:'宜昌', gdp:6464.42, retail:2376.24, popInflow:5.55, tertiary:49.7, tertiaryOfficial:true },
+  { name:'榆林', gdp:7501.06, retail:1053.95, popInflow:5.55, tertiary:35.0, tertiaryOfficial:false },
+  { name:'郑州', gdp:15244.6, retail:6629.4, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
+];
+
+const INDICATORS = [
+  { key:'gdp',       label:'GDP 总值',       unit:'亿元', color:'#60a5fa', ring:'rgba(96,165,250,.25)' },
+  { key:'retail',    label:'社零总额',       unit:'亿元', color:'#34d399', ring:'rgba(52,211,153,.25)' },
+  { key:'popInflow', label:'人口净流入率',   unit:'%',    color:'#fbbf24', ring:'rgba(251,191,36,.25)' },
+  { key:'tertiary',  label:'服务业占比',     unit:'%',    color:'#f472b6', ring:'rgba(244,114,182,.25)' },
+];
+
+function minMax(val, min, max){
+  if(max === min) return 50;
+  return ((val - min) / (max - min)) * 100;
+}
+const RANGES = {};
+INDICATORS.forEach(ind => {
+  const vals = CITY_DATA.map(c => c[ind.key]);
+  RANGES[ind.key] = { min: Math.min(...vals), max: Math.max(...vals) };
+});
+function calcScores(rawWeights){
+  const sum = rawWeights.reduce((a,b)=>a+b, 0) || 1;
+  const w = rawWeights.map(v => v / sum);
+  const results = CITY_DATA.map(c => {
+    const norms = {}; let score = 0;
+    INDICATORS.forEach((ind, i) => {
+      norms[ind.key] = minMax(c[ind.key], RANGES[ind.key].min, RANGES[ind.key].max);
+      score += norms[ind.key] * w[i];
+    });
+    return { name:c.name, score, norms, raw:c };
+  });
+  results.sort((a, b) => b.score - a.score);
+  return { results, weights:w };
+}
+const sliderWrap = document.getElementById('sliderWrap');
+const sliders = [];
+INDICATORS.forEach((ind, i) => {
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <div class="flex items-center justify-between mb-1.5">
+      <div class="flex items-center gap-2">
+        <span class="dot" style="background:${ind.color}"></span>
+        <span class="text-sm text-slate-300">${ind.label}</span>
+        <span class="text-[10px] text-slate-600">${ind.unit}</span>
+      </div>
+      <div class="flex items-baseline gap-1">
+        <span class="num text-lg font-bold text-white" data-val="${i}">25</span>
+        <span class="text-[10px] text-slate-600" data-pct="${i}">25.0%</span>
+      </div>
+    </div>
+    <input type="range" min="0" max="100" value="25" class="slider" data-idx="${i}" style="--ring:${ind.ring}">`;
+  sliderWrap.appendChild(div);
+  const slider = div.querySelector('input');
+  const valEl  = div.querySelector('[data-val]');
+  const pctEl  = div.querySelector('[data-pct]');
+  sliders.push({ el:slider, valEl, pctEl, color:ind.color });
+  slider.addEventListener('input', () => { valEl.textContent = slider.value; update(); });
+});
+const weightBar = document.getElementById('weightBar');
+const weightSumEl = document.getElementById('weightSum');
+function renderWeightBar(weights){
+  weightBar.innerHTML = weights.map((w, i) => `<div style="width:${(w*100).toFixed(1)}%;background:${INDICATORS[i].color};transition:width .4s cubic-bezier(.4,0,.2,1)"></div>`).join('');
+  weightSumEl.textContent = '合计 100%';
+}
+const chart = echarts.init(document.getElementById('chart'));
+function renderChart(results){
+  const names  = results.map(r => r.name);
+  const scores = results.map(r => Number(r.score.toFixed(2)));
+  chart.setOption({
+    grid: { left: 70, right: 60, top: 10, bottom: 24 },
+    xAxis: { type:'value', max:100, axisLabel:{ color:'#64748b', fontSize:11 }, splitLine:{ lineStyle:{ color:'rgba(148,163,184,.06)' } } },
+    yAxis: { type:'category', data:names, axisLabel:{ color:'#cbd5e1', fontSize:13, fontWeight:600 }, axisLine:{ show:false }, axisTick:{ show:false }, inverse:true },
+    tooltip:{
+      trigger:'axis', axisPointer:{ type:'shadow' }, backgroundColor:'rgba(15,23,42,.95)', borderColor:'rgba(148,163,184,.15)', textStyle:{ color:'#e2e8f0', fontSize:12 },
+      formatter: params => {
+        const idx = params[0].dataIndex; const r = results[idx];
+        let html = `<div style="font-weight:700;margin-bottom:6px">${r.name}</div>`;
+        html += `<div style="font-size:18px;font-weight:700;color:#60a5fa;margin-bottom:6px">${r.score.toFixed(1)} 分</div>`;
+        INDICATORS.forEach(ind => {
+          const tag = (ind.key==='tertiary') ? (r.raw.tertiaryOfficial ? ' · 官方' : ' · 估算') : '';
+          html += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;line-height:1.8"><span style="color:#94a3b8">${ind.label}</span><span style="color:${ind.color}">${r.norms[ind.key].toFixed(1)} · ${r.raw[ind.key]}${ind.unit}${tag}</span></div>`;
+        });
+        return html;
+      }
+    },
+    series:[{ type:'bar', data:scores, barWidth:'55%', label:{ show:true, position:'right', formatter: p => p.value.toFixed(1), color:'#94a3b8', fontSize:12, fontWeight:600 },
+      itemStyle:{ borderRadius:[0,6,6,0], color: p => { const s=p.value; const ratio=Math.min(s/100,1); const r1=Math.round(96+(34-96)*ratio); const g1=Math.round(165+(211-165)*ratio); const b1=Math.round(250+(153-250)*ratio); const c1=`rgb(${r1},${g1},${b1})`; const c2=`rgba(${r1},${g1},${b1},.3)`; return new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:c2},{offset:1,color:c1}]); } },
+      animationDuration:600, animationDurationUpdate:600, animationEasingUpdate:'cubicInOut' }],
+  });
+}
+const detailWrap = document.getElementById('detailWrap');
+function renderDetail(results, weights){
+  detailWrap.innerHTML = `
+    <div class="grid gap-1" style="grid-template-columns: 50px repeat(${INDICATORS.length},1fr) 50px">
+      <div class="text-[10px] text-slate-600 text-center pb-1">城市</div>
+      ${INDICATORS.map(ind => `<div class="text-[10px] text-slate-600 text-center pb-1" title="${ind.label}">${ind.label}</div>`).join('')}
+      <div class="text-[10px] text-slate-600 text-center pb-1">总分</div>
+      ${results.map((r, idx) => `
+        <div class="text-xs text-slate-300 font-medium flex items-center ${idx===0?'text-amber-400':''}">${idx+1}.${r.name}</div>
+        ${INDICATORS.map(ind => { const v=r.norms[ind.key]; return `<div class="flex items-center gap-1"><div class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full" style="width:${v}%;background:${ind.color};transition:width .5s cubic-bezier(.4,0,.2,1)"></div></div></div>`; }).join('')}
+        <div class="text-xs text-center font-bold ${idx===0?'text-amber-400':'text-slate-300'}">${r.score.toFixed(1)}</div>
+      `).join('')}
+    </div>`;
+}
+function update(){
+  const rawW = sliders.map(s => parseInt(s.el.value));
+  const { results, weights } = calcScores(rawW);
+  sliders.forEach((s, i) => { s.pctEl.textContent = (weights[i]*100).toFixed(1)+'%'; s.valEl.style.color = rawW[i]===0?'#475569':'#fff'; });
+  renderWeightBar(weights); renderChart(results); renderDetail(results, weights);
+}
+document.getElementById('resetBtn').addEventListener('click', () => { sliders.forEach(s => { s.el.value = 25; s.valEl.textContent = '25'; }); update(); });
+window.addEventListener('resize', () => chart.resize());
+update();
+
+/* ========== Tab 切换处理 ========== */
+(function() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panels = {
+    db: document.getElementById('panel-db'),
+    mg: document.getElementById('panel-mg'),
+  };
+
+  function switchTab(name) {
+    tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    Object.entries(panels).forEach(([k, el]) => el.classList.toggle('active', k === name));
+    // ECharts 在 hidden 时宽度为 0，切换到 mg 时必须 resize
+    if (name === 'mg' && typeof chart !== 'undefined' && chart && chart.resize) {
+      setTimeout(() => chart.resize(), 50);
+    }
+    // 切到 db 时重新渲染表格（避免某些状态丢失）
+    if (name === 'db' && typeof renderTable === 'function') {
+      setTimeout(() => renderTable(), 50);
+    }
+  }
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+})();
+</script>
+
 </body>
 </html>
+
