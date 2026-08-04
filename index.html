@@ -91,6 +91,60 @@ tbody td { padding: 10px 10px; vertical-align: top; }
 
 /* ========== macro-score 原样式（包到 .mg-scope 下避免冲突） ========== */
 .mg-scope * { -webkit-tap-highlight-color: transparent; }.mg-scope body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif; }.mg-scope .slider { -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:3px; outline:none; background:rgba(255,255,255,.08); cursor:pointer; transition:background .2s; }.mg-scope .slider:hover { background:rgba(255,255,255,.12); }.mg-scope .slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; cursor:pointer; box-shadow:0 0 0 4px var(--ring,rgba(96,165,250,.25)), 0 2px 8px rgba(0,0,0,.4); transition:transform .15s ease, box-shadow .15s ease; }.mg-scope .slider::-webkit-slider-thumb:hover { transform:scale(1.15); }.mg-scope .slider::-moz-range-thumb { width:20px; height:20px; border-radius:50%; border:none; background:#fff; cursor:pointer; box-shadow:0 0 0 4px var(--ring,rgba(96,165,250,.25)),0 2px 8px rgba(0,0,0,.5); }.mg-scope .card { background:rgba(30,41,59,.6); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(148,163,184,.08); border-radius:16px; }.mg-scope .num { font-variant-numeric:tabular-nums; transition:color .3s; }.mg-scope ::-webkit-scrollbar { width:6px; }.mg-scope ::-webkit-scrollbar-track { background:transparent; }.mg-scope ::-webkit-scrollbar-thumb { background:rgba(148,163,184,.2); border-radius:3px; }.mg-scope .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+/* ========== viz 可视化对比 面板样式（包到 .viz-scope 下避免冲突） ========== */
+.viz-scope { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif; color:#333; }
+.viz-scope .viz-card { background:#fff; border:1px solid #eef0f4; border-radius:14px; box-shadow:0 2px 12px rgba(26,35,126,0.06); padding:18px 20px; margin-bottom:16px; }
+.viz-scope .viz-card h3 { font-size:15px; font-weight:700; color:#1a237e; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+.viz-scope .viz-card .sub { font-size:12px; color:#888; margin-bottom:14px; }
+.viz-scope .field-row { display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center; }
+.viz-scope .field { display:flex; flex-direction:column; gap:6px; }
+.viz-scope .field > label { font-size:12px; color:#666; font-weight:600; }
+.viz-scope select.viz-sel, .viz-scope input[type=text].viz-sel { padding:8px 10px; border:2px solid #e0e0e0; border-radius:8px; font-size:13px; background:#fff; outline:none; min-width:140px; }
+.viz-scope select.viz-sel:focus, .viz-scope input.viz-sel:focus { border-color:#3949ab; }
+.viz-scope .type-btn { padding:7px 14px; border:1px solid #d8dce4; background:#fff; border-radius:9px; font-size:13px; cursor:pointer; color:#555; transition:all .15s; }
+.viz-scope .type-btn:hover { border-color:#3949ab; color:#1a237e; }
+.viz-scope .type-btn.active { background:linear-gradient(135deg,#1a237e,#3949ab); color:#fff; border-color:#3949ab; box-shadow:0 2px 8px rgba(26,35,126,.25); }
+.viz-scope .swatch { width:24px; height:24px; border-radius:6px; border:2px solid #fff; box-shadow:0 0 0 1px #d8dce4; cursor:pointer; transition:transform .12s; }
+.viz-scope .swatch:hover { transform:scale(1.12); }
+.viz-scope .swatch.active { box-shadow:0 0 0 2px #3949ab; transform:scale(1.12); }
+.viz-scope .color-input { width:40px; height:30px; border:1px solid #d8dce4; border-radius:6px; padding:2px; cursor:pointer; background:#fff; }
+.viz-scope .chk { display:flex; align-items:center; gap:6px; font-size:13px; color:#555; cursor:pointer; }
+.viz-scope .chk input { width:16px; height:16px; accent-color:#3949ab; }
+.viz-scope #vizCitySel { min-height:140px; }
+.viz-scope .viz-hint { font-size:12px; color:#b00; min-height:18px; margin-top:8px; }
+.viz-scope #vizChart { width:100%; height:480px; }
+.viz-scope .viz-empty { display:flex; align-items:center; justify-content:center; height:480px; color:#bbb; font-size:15px; }
+.viz-scope .viz-actions { display:flex; gap:10px; margin-top:4px; }
+.viz-scope .btn-main { padding:9px 20px; border:none; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; background:linear-gradient(135deg,#1a237e,#3949ab); color:#fff; box-shadow:0 2px 8px rgba(26,35,126,.25); }
+.viz-scope .btn-main:hover { filter:brightness(1.08); }
+.viz-scope .btn-sub { padding:9px 18px; border:1px solid #d8dce4; border-radius:9px; font-size:13px; cursor:pointer; background:#fff; color:#555; }
+.viz-scope .btn-sub:hover { border-color:#3949ab; color:#1a237e; }
+
+/* ========== trend 趋势复盘 面板样式（.trend-scope 命名空间隔离） ========== */
+.trend-scope { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif; color:#333; }
+.trend-scope .trend-card { background:#fff; border:1px solid #eef0f4; border-radius:14px; box-shadow:0 2px 12px rgba(26,35,126,0.06); padding:18px 20px; margin-bottom:16px; }
+.trend-scope .trend-card h3 { font-size:15px; font-weight:700; color:#1a237e; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+.trend-scope .trend-card .sub { font-size:12px; color:#888; margin-bottom:14px; }
+.trend-scope .field-row { display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center; }
+.trend-scope .field { display:flex; flex-direction:column; gap:6px; }
+.trend-scope .field > label { font-size:12px; color:#666; font-weight:600; }
+.trend-scope select.trend-sel { padding:8px 10px; border:2px solid #e0e0e0; border-radius:8px; font-size:13px; background:#fff; outline:none; min-width:150px; }
+.trend-scope select.trend-sel:focus { border-color:#3949ab; }
+.trend-scope .type-btn { padding:7px 14px; border:1px solid #d8dce4; background:#fff; border-radius:9px; font-size:13px; cursor:pointer; color:#555; transition:all .15s; }
+.trend-scope .type-btn:hover { border-color:#3949ab; color:#1a237e; }
+.trend-scope .type-btn.active { background:linear-gradient(135deg,#1a237e,#3949ab); color:#fff; border-color:#3949ab; box-shadow:0 2px 8px rgba(26,35,126,.25); }
+.trend-scope #trendChart { width:100%; height:450px; }
+.trend-scope .trend-empty { display:flex; align-items:center; justify-content:center; height:450px; color:#bbb; font-size:15px; }
+.trend-scope .trend-note { font-size:12px; color:#888; margin-top:10px; line-height:1.7; }
+.trend-scope .trend-note b { color:#b00; }
+.trend-scope .trend-hint { font-size:12px; color:#b00; min-height:18px; margin-top:8px; }
+.trend-scope .btn-main { padding:9px 20px; border:none; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; background:linear-gradient(135deg,#1a237e,#3949ab); color:#fff; box-shadow:0 2px 8px rgba(26,35,126,.25); }
+.trend-scope .btn-main:hover { filter:brightness(1.08); }
+.trend-scope table.trend-tbl { width:100%; border-collapse:collapse; margin-top:14px; font-size:13px; }
+.trend-scope table.trend-tbl th, .trend-scope table.trend-tbl td { border:1px solid #eef0f4; padding:8px 10px; text-align:center; }
+.trend-scope table.trend-tbl th { background:#f5f6fa; color:#444; font-weight:600; }
+.trend-scope table.trend-tbl td.metric-name { text-align:left; font-weight:600; color:#1a237e; background:#fafbff; }
+.trend-scope table.trend-tbl td.nullval { color:#bbb; }
 </style>
 </head>
 <body>
@@ -99,6 +153,8 @@ tbody td { padding: 10px 10px; vertical-align: top; }
 <nav class="tab-bar">
   <button class="tab-btn active" data-tab="db">📊 城市数据库</button>
   <button class="tab-btn" data-tab="mg">🎯 宏观打分</button>
+  <button class="tab-btn" data-tab="viz">📈 可视化对比</button>
+  <button class="tab-btn" data-tab="trend">📉 趋势复盘</button>
 </nav>
 
 <!-- Tab 1: 城市数据库 -->
@@ -210,6 +266,142 @@ tbody td { padding: 10px 10px; vertical-align: top; }
     <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">数据说明：GDP、社零、服务业占比均取自各城市2025年统计公报（服务业占比=第三产业增加值/GDP，标注「估算」者为依据省份三产占比或近年结构推算）。人口净流入率为参考指标，仅8城有公开官方值，其余按8城均值填充，权重可调至0以忽略。</p>
   </section>
 </main>
+</div>
+
+<!-- Tab 3: 可视化对比 -->
+<div id="panel-viz" class="tab-panel viz-scope">
+  <div style="max-width:1200px;margin:18px auto;padding:0 16px;">
+    <div class="viz-card">
+      <h3>📈 城市指标可视化对比</h3>
+      <div class="sub">选择多个城市 + 同一指标，自动生成对比图表。可自由切换图形类型、调色板、字体与样式，满足不同美观需求。</div>
+
+      <div class="field-row" style="margin-bottom:16px;">
+        <div class="field">
+          <label>对比指标（单指标）</label>
+          <select id="vizIndicator" class="viz-sel">
+            <option value="gdp">GDP(亿元)</option>
+            <option value="retail">社零总额(亿元)</option>
+            <option value="income">人均可支配收入(元)</option>
+            <option value="tourism">旅游收入(亿元)</option>
+            <option value="railway">铁路客运(万人次)</option>
+            <option value="airport">机场吞吐(万人次)</option>
+            <option value="hotels">星级饭店(家)</option>
+            <option value="tertiary">服务业占比(%)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>图形类型</label>
+          <div id="vizTypeBtns" style="display:flex;gap:8px;">
+            <button class="type-btn active" data-type="bar">📊 柱状图</button>
+            <button class="type-btn" data-type="line">📈 折线图</button>
+            <button class="type-btn" data-type="pie">🥧 饼图</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" style="flex:1;min-width:220px;">
+          <label>选择城市（可多选，Ctrl/⌘ 多选，默认北上广深）</label>
+          <select id="vizCitySel" class="viz-sel" multiple size="8"></select>
+        </div>
+        <div class="field">
+          <button class="btn-sub" id="vizSelBSG">选中 北上广深</button>
+          <button class="btn-sub" id="vizSelTop10">选中 GDP 前10</button>
+          <button class="btn-sub" id="vizSelClear">清空</button>
+        </div>
+      </div>
+      <div class="viz-hint" id="vizHint"></div>
+    </div>
+
+    <div class="viz-card">
+      <h3>🎨 样式设置</h3>
+      <div class="sub">调整调色板、柱体颜色、字体与显示细节，实时重绘。</div>
+      <div class="field-row" style="margin-bottom:14px;">
+        <div class="field">
+          <label>配色方案</label>
+          <div class="field-row" id="vizPalette" style="gap:10px;"></div>
+        </div>
+        <div class="field">
+          <label>自定义柱/线基准色</label>
+          <input type="color" id="vizCustomColor" class="color-input" value="#1a237e">
+        </div>
+      </div>
+      <div class="field-row" style="margin-bottom:14px;">
+        <div class="field">
+          <label>字体</label>
+          <select id="vizFont" class="viz-sel">
+            <option value="-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif">系统默认 / 微软雅黑</option>
+            <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方 / 雅黑</option>
+            <option value="'Helvetica Neue',Arial,sans-serif">Helvetica / Arial</option>
+            <option value="'KaiTi','STKaiti',serif">楷体</option>
+            <option value="'SimSun',serif">宋体</option>
+            <option value="'SimHei',sans-serif">黑体</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>字号</label>
+          <select id="vizFontSize" class="viz-sel">
+            <option value="11">小 (11px)</option>
+            <option value="13" selected>中 (13px)</option>
+            <option value="15">大 (15px)</option>
+            <option value="17">特大 (17px)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <label class="chk"><input type="checkbox" id="vizShowLabel" checked> 显示数值</label>
+        <label class="chk"><input type="checkbox" id="vizRounded" checked> 圆角柱体</label>
+        <label class="chk"><input type="checkbox" id="vizSmooth"> 折线平滑</label>
+        <label class="chk"><input type="checkbox" id="vizHorizontal"> 横向柱状图</label>
+      </div>
+      <div class="viz-actions" style="margin-top:16px;">
+        <button class="btn-main" id="vizRender">生成图表</button>
+        <button class="btn-sub" id="vizDownload">下载图片 (PNG)</button>
+        <button class="btn-sub" id="vizResetStyle">重置样式</button>
+      </div>
+    </div>
+
+    <div class="viz-card">
+      <div id="vizChart"><div class="viz-empty">请在上方选择城市与指标，点击「生成图表」</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 4: 趋势复盘 -->
+<div id="panel-trend" class="tab-panel trend-scope">
+  <div style="max-width:1200px;margin:18px auto;padding:0 16px;">
+    <div class="trend-card">
+      <h3>📉 城市历史趋势复盘（2021–2025）</h3>
+      <div class="sub">选择已采集历史数据的城市，自动生成连续四年时序趋势图，并可切换图形类型、对比不同指标的周期走势。数据逐城累积，缺数据年份以灰色缺口标出（绝不编造）。</div>
+      <div class="field-row">
+        <div class="field">
+          <label>城市（仅显示已采集城市）</label>
+          <select id="trendCity" class="trend-sel"></select>
+        </div>
+        <div class="field">
+          <label>指标</label>
+          <select id="trendMetric" class="trend-sel"></select>
+        </div>
+        <div class="field">
+          <label>图形类型</label>
+          <div id="trendTypeBtns" style="display:flex;gap:8px;">
+            <button class="type-btn active" data-type="line">折线图</button>
+            <button class="type-btn" data-type="bar">柱状图</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="trendRender" class="btn-main">生成趋势图</button>
+        </div>
+      </div>
+      <div id="trendHint" class="trend-hint"></div>
+    </div>
+    <div class="trend-card">
+      <div id="trendChart"><div class="trend-empty">请选择城市与指标，点击「生成趋势图」</div></div>
+      <div id="trendTableWrap"></div>
+      <div id="trendNote" class="trend-note"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -473,7 +665,9 @@ const SRC = {
   lyStats: { name: '龙岩市统计局(2024)', url: 'https://www.longyan.gov.cn/sj/tjgb/202503/t20250328_2208474.htm' },
   ptStats: { name: '莆田市统计局(2024)', url: 'https://www.putian.gov.cn/zwgk/tjxx/tjgb/202504/P020250414307498109808.pdf' },
   lsStats: { name: '凉山州统计局(2024)', url: 'http://mzw.sc.gov.cn/scsmzw/ztjj/sjfb_mzjj_zt2024.shtml' },
-};
+  airport2025: { name: '民航局2025年民航行业发展统计公报 / CADAS机场吞吐量', url: 'https://www.cadas.com.cn/' },
+
+}
 
 function srcLink(s) {
   if (!s) return '';
@@ -484,61 +678,61 @@ function srcLink(s) {
 
 // 城市数据：[中文名, 拼音, 省份, GDP(亿元), GDP来源, 社零(亿元), 社零来源, 人均收入(元), 收入来源]
 const cityData = [
-  ["北京", "BEIJING", "北京", 52073.4, SRC.bjStats, 13677, SRC.china5e, 89090, SRC.bjStats, 7159.3, "+6.5%", 17245, null, 12436, "+6.5%", null, null, 86.0, SRC.bjStats],
-  ["长春", "CHANGCHUN", "吉林", 8005.59, SRC.jlStats, 2551.17, SRC.ccRetail, 40200, SRC.euobiz, 3631, "+20%", null, null, 1776, "+0.9%", null, null, 55.0, null],
-  ["长沙", "CHANGSHA", "湖南", 15737.82, SRC.csStats, 5738.93, SRC.csRetail, 66400, SRC.euobiz, 2580.47, "+6.8%", null, null, 3025, "-3.1%", null, null, 56.2, null],
-  ["常州", "CHANGZHOU", "江苏", 11158.71, SRC.jsStats, 2918.1, SRC.czStats, 68295, SRC.net163, 1505.99, null, null, null, 513.92, "+12.6%", null, null, 52.0, null],
-  ["成都", "CHENGDU", "四川", 24763.61, SRC.scStats, 11434.1, SRC.chengduStats, 54363, SRC.cdIncome, 4337.7, "+6.5%", 11828, null, 9020.6, "+3.3%", null, null, 60.3, null],
-  ["重庆", "CHONGQING", "重庆", 33757.93, SRC.cqStats, 16688.5, SRC.china5e, 41580, SRC.cqIncome, 1471.09, "+5.0%", 10797.01, null, 5112.69, "+2.4%", null, null, 53.2, null],
-  ["大理州", "DALI", "云南", 2010.93, SRC.dqStats, 737.8, SRC.dlRetail, 29720, SRC.ynIncome, 1393, null, null, null, 375.05, null, null, null, 55.0, null],
-  ["大连", "DALIAN", "辽宁", 10002.1, SRC.lnStats, 2180.8, SRC.dlStats, 52007, SRC.dlIncome, 2125.1, "+20.4%", null, null, 1979, "+2.6%", null, null, 58.0, null],
-  ["东莞", "DONGGUAN", "广东", 12760.2, SRC.gdStats, 4446, SRC.dgStats, 70803, SRC.dgIncome, null, null, null, null, null, null, null, null, 43.55, SRC.gdStats],
-  ["佛山", "FOSHAN", "广东", 13157.35, SRC.gdStats, 3945.94, SRC.fsStats, 71995, SRC.qqIncome, 700, null, null, null, null, null, null, null, 48.54, SRC.gdStats],
-  ["福州", "FUZHOU", "福建", 15112.32, SRC.fjStats, 5969.1, SRC.fzStats, 54007, SRC.fjIncome, 1416.4, "+19.4%", 6549.54, "+108.3%", 1612, "+5.4%", null, null, 58.96, SRC.fjStats],
-  ["广州", "GUANGZHOU", "广东", 32039.46, SRC.gdStats, 11032.38, SRC.china5e, 80591, SRC.qqIncome, 3768.16, "+6.8%", 15032, null, 8358.77, "+9.5%", null, null, 74.97, SRC.gdStats],
-  ["杭州", "HANGZHOU", "浙江", 23010.9, SRC.zjStats, 9499, SRC.china5e, 80017, SRC.qqIncome, 3387.2, "+9.5%", 10800, null, 5046, "+5.0%", 83, "-10", 70.1, null],
-  ["哈尔滨", "HARBIN", "黑龙江", 6188.5, SRC.hljStat, 2557.7, SRC.hrbRetail, 39817, SRC.hrbIncome, 2818.4, "+21.8%", null, null, 2465, "+3.6%", null, null, 65.0, null],
-  ["合肥", "HEFEI", "安徽", 14210, SRC.ahStats, 5320.9, SRC.hfStats, 58930, SRC.net163, null, null, null, null, 1265, "+1.3%", null, null, 62.0, null],
-  ["惠州", "HUIZHOU", "广东", 6363.66, SRC.gdStats, 2093.22, SRC.hzStat, 50812, SRC.hzIncome, 556.1, "+12.5%", null, null, 330, null, null, null, 41.58, SRC.gdStats],
-  ["嘉兴", "JIAXING", "浙江", 7851.06, SRC.zjStats, 2972.14, SRC.jxStats, 72086, SRC.qqIncome, null, null, null, null, null, null, null, null, 48.0, null],
-  ["济南", "JINAN", "山东", 14210.09, SRC.sdStats, 5547.9, SRC.jnStats, 56961, SRC.sdIncome, 1399.9, "+10.8%", null, null, 2033, "+1.6%", null, null, 64.5, SRC.sdStats],
-  ["金华", "JINHUA", "浙江", 7313.47, SRC.zjStats, 4826.5, SRC.jhStats, 67877, SRC.net163, null, null, null, null, 320, null, null, null, 55.0, null],
-  ["昆明", "KUNMING", "云南", 8637.45, SRC.ynStats, 3817.69, SRC.kmRetail, 48754, SRC.kmIncome, 4890, null, null, null, 4970, "+5.3%", null, null, 67.2, SRC.ynStats],
-  ["丽江", "LIJIANG", "云南", 744.27, SRC.ynStats, 299.43, SRC.ljRetail, 27320, SRC.ynIncome, 1496, null, null, null, 863, "+6.6%", null, null, 60.0, null],
-  ["临沂", "LINYI", "山东", 6862.15, SRC.sdStats, 3877.5, SRC.lyStats, 39180, SRC.sdIncome, 1000, null, 928.5, "+4.9%", 246.73, "-0.1%", null, null, 52.2, SRC.sdStats],
-  ["南昌", "NANCHANG", "江西", 8141.69, SRC.jiangxiStats, 2921.78, SRC.ncStats, 51202, SRC.ncIncome, 2443, "+17.4%", null, null, 1193, "+5.9%", null, null, 52.0, null],
-  ["南京", "NANJING", "江苏", 19428.78, SRC.jsStats, 8135.85, SRC.china5e, 78243, SRC.qqIncome, 2390.2, "+9.3%", 8939, null, 3138, "+0.6%", null, null, 68.0, SRC.jsStats],
-  ["南宁", "NANNING", "广西", 6212.46, SRC.gxStats, 2186.7, SRC.nnRetail, 39659, SRC.nnIncome, 2000, "+12.5%", null, null, 1350, "-3.6%", null, null, 56.0, null],
-  ["南通", "NANTONG", "江苏", 12801.5, SRC.jsStats, 3855.4, SRC.ntStats, 57242, SRC.ntIncome, 1000, null, 1401.8, "+5.9%", 430, null, null, null, 48.0, null],
-  ["宁波", "NINGBO", "浙江", 18715.68, SRC.zjStats, 5703, SRC.nbStats, 77779, SRC.qqIncome, 1500, null, 6643, "+3.5%", 1614, "+9.5%", null, null, 60.0, null],
-  ["青岛", "QINGDAO", "山东", 17560.67, SRC.sdStats, 6960.7, SRC.qdStats, 62738, SRC.sdIncome, 2100, "+13%", null, null, 2689, "+2.7%", null, null, 63.6, SRC.sdStats],
-  ["泉州", "QUANZHOU", "福建", 13778.34, SRC.fjStats, 6416.07, SRC.qzStats, 54858, SRC.fjIncome, 1348.30, "+11.3%", 3527.98, "+1.1%", 886, "+0.2%", null, null, 47.5, SRC.fjStats],
-  ["三亚", "SANYA", "海南", 1033.88, SRC.euobiz, 573.06, SRC.syRetail4, 38000, SRC.provIncome, 1025, "+8.7%", null, null, 2268, "+5.9%", null, null, 80.0, null],
-  ["上海", "SHANGHAI", "上海", 56708.71, SRC.shStats, 16600.93, SRC.china5e, 91987, SRC.shStats, 6730, "+16.8%", 14037, "+5.9%", 13514.5, "+8.3%", 142, "-6", 79.0, SRC.shStats],
-  ["汕头", "SHANTOU", "广东", 3023.83, SRC.gdStats, 1483.23, SRC.stRetail, 34847, SRC.sdIncome, 229.6, "+23.9%", null, null, 1023, "+18.0%", null, null, 57.71, SRC.gdStats],
-  ["绍兴", "SHAOXING", "浙江", 8932.13, SRC.zjStats, 3255, SRC.sxStats, 76732, SRC.qqIncome, 918.9, "+9.0%", null, null, null, null, null, null, 50.0, null],
-  ["沈阳", "SHENYANG", "辽宁", 9100.33, SRC.lnStats, 4195.4, SRC.syRetail, 51827, SRC.syIncome, 2400, null, null, null, 2491, "+4.9%", null, null, 60.0, null],
-  ["深圳", "SHENZHEN", "广东", 38731.8, SRC.gdStats, 10259.93, SRC.china5e, 84945, SRC.qqIncome, 3142, null, 11459, null, 6647, "+8.1%", null, null, 62.54, SRC.gdStats],
-  ["石家庄", "SHIJIAZHUANG", "河北", 8651.7, SRC.hebeiStats, 2787.5, SRC.sjzStats, 42085, SRC.sjzIncome, null, null, null, null, 1202, "+6.2%", null, null, 60.0, null],
-  ["苏州", "SUZHOU", "江苏", 27695.09, SRC.jsStats, 9092.2, SRC.china5e, 80796, SRC.qqIncome, 2227.4, "+9.1%", 13300, "+7.3%", null, null, null, null, 52.9, SRC.jsStats],
-  ["泰州", "TAIZHOU", "江苏", 7255.27, SRC.jsStats, 1834.75, SRC.tz2Stats, 52996, SRC.tz2Income, 506.79, "+15.1%", null, null, null, null, null, null, 48.0, null],
-  ["台州", "TAIZHOU2", "浙江", 7005.87, SRC.zjStats, 3084.34, SRC.tzStats, 67795, SRC.net163, null, null, null, null, 244.74, "+14.25%", null, null, 52.0, null],
-  ["唐山", "TANGSHAN", "河北", 10450.2, SRC.hebeiStats, 2420.9, SRC.tsRetail, 47200, SRC.tsIncome, 1259.0, "+12.3%", null, null, 58.3, "+14.8%", null, null, 42.0, null],
-  ["天津", "TIANJIN", "天津", 18539.82, SRC.tjStats, 4140.7, SRC.tianjinRetail, 55918, SRC.tjIncome, 3200, null, 11600, "+6%", 1986, "-1.0%", null, null, 65.0, null],
-  ["潍坊", "WEIFANG", "山东", 8587.36, SRC.wfGDP, 3584.9, SRC.wfRetail, 45794, SRC.wfIncome, 1036.2, null, null, null, 44, "-0.2%", null, null, 50.3, SRC.wfGDP],
-  ["温州", "WENZHOU", "浙江", 10213.92, SRC.zjStats, 5143.9, SRC.wzStats, 73660, SRC.qqIncome, 1245.4, "+11.2%", 2926.2, "+4.7%", 1306, "+4.2%", null, null, 58.0, null],
-  ["武汉", "WUHAN", "湖北", 22147.35, SRC.hbStats, 9013.96, SRC.china5e, 62530, SRC.wuhanIncome, 4889, "+16.4%", 8701.11, "+3.5%", 3134, "-0.2%", 41, "+3", 68.1, SRC.hbStats],
-  ["无锡", "WUXI", "江苏", 16773.94, SRC.jsStats, 4418.47, SRC.wuxiStats, 75200, SRC.qqIncome, 1916.34, "+9.4%", null, null, 1098, "+4.5%", null, null, 51.0, null],
-  ["厦门", "XIAMEN", "福建", 8980.37, SRC.fjStats, 3448.6, SRC.fjStats, 77762, SRC.qqIncome, 2135.77, "+11.8%", null, null, 2919, "+4.6%", null, null, 61.9, SRC.fjStats],
-  ["西安", "XIAN", "陕西", 13902.67, SRC.shaanxiStats, 5721.21, SRC.xaStats, 47496, SRC.xaIncome, 4026.2, "+7.1%", 7951.17, "+1.5%", 4853.6, "+3.2%", null, null, 69.05, SRC.shaanxiStats],
-  ["西双版纳", "XISHUANGBANNA", "云南", 940.83, SRC.ynStats, 429.85, SRC.xsbnRetail, 29820, SRC.ynIncome, 776.53, "+4.2%", null, null, 772, "+7.7%", null, null, 55.0, null],
-  ["徐州", "XUZHOU", "江苏", 9957.22, SRC.jsStats, 3398.7, SRC.xzStats, 42230, SRC.net163, null, null, null, null, 410, null, null, null, 48.0, null],
-  ["盐城", "YANCHENG", "江苏", 8045.28, SRC.jsStats, 2894.7, SRC.ycStats, 45713, SRC.net163, 661.99, "+10.4%", null, null, 200, null, null, null, 48.0, null],
-  ["扬州", "YANGZHOU", "江苏", 8056.75, SRC.jsStats, 1961.68, SRC.yzRetail, 54386, SRC.yzIncome, 1142.82, null, null, null, 416.36, "+14.1%", null, null, 50.0, null],
-  ["烟台", "YANTAI", "山东", 11350.98, SRC.sdStats, 4068.85, SRC.ytStats, 53562, SRC.sdIncome, 1265.19, null, 1625.51, "+19.8%", 804, "-6.9%", null, null, 50.0, null],
-  ["宜昌", "YICHANG", "湖北", 6464.42, SRC.euobiz, 2376.24, SRC.yc2Stats, 42714, SRC.ycIncome, 1427, "+22.5%", null, null, 340.6, "+10.8%", null, null, 49.7, SRC.euobiz],
-  ["榆林", "YULIN", "陕西", 7501.06, SRC.shaanxiStats, 1053.95, SRC.ylRetail, 38000, SRC.snIncome, 306, null, 673.1, "+2.3%", 310.65, "+19.9%", null, null, 35.0, null],
-  ["郑州", "ZHENGZHOU", "河南", 15244.6, SRC.hnStats, 6629.4, SRC.hnStats, 48021, SRC.hnStats, 2206.7, null, 9400, "+6.4%", 2919, "+2.4%", null, null, 58.0, null],
+  ["北京", "BEIJING", "北京", 52073.4, SRC.bjStats, 13677, SRC.china5e, 89090, SRC.bjStats, 7159.3, "+6.5%", 17245, null, 12436, "+6.5%", null, null, 86.0, SRC.bjStats, SRC.bjStats, null, SRC.airport2025, null],
+  ["长春", "CHANGCHUN", "吉林", 8005.59, SRC.jlStats, 2551.17, SRC.ccRetail, 40200, SRC.euobiz, 3631, "+20%", null, null, 1776, "+0.9%", null, null, 55.0, null, null, null, null, null],
+  ["长沙", "CHANGSHA", "湖南", 15737.82, SRC.csStats, 5738.93, SRC.csRetail, 66400, SRC.euobiz, 2580.47, "+6.8%", null, null, 3025, "-3.1%", null, null, 56.2, SRC.hn2Stats, SRC.hn2Stats, null, SRC.airport2025, null],
+  ["常州", "CHANGZHOU", "江苏", 11158.71, SRC.jsStats, 2918.1, SRC.czStats, 68295, SRC.net163, 1505.99, null, null, null, 513.92, "+12.6%", null, null, 52.0, null, null, null, null, null],
+  ["成都", "CHENGDU", "四川", 24763.61, SRC.scStats, 11434.1, SRC.chengduStats, 54363, SRC.cdIncome, 4337.7, "+6.5%", 11828, null, 9020.6, "+3.3%", null, null, 60.3, SRC.scStats, SRC.scStats, null, SRC.airport2025, null],
+  ["重庆", "CHONGQING", "重庆", 33757.93, SRC.cqStats, 16688.5, SRC.china5e, 41580, SRC.cqIncome, 1471.09, "+5.0%", 10797.01, null, 5112.69, "+2.4%", null, null, 53.2, SRC.cqStats, SRC.cqStats, null, SRC.airport2025, null],
+  ["大理州", "DALI", "云南", 2010.93, SRC.dqStats, 737.8, SRC.dlRetail, 29720, SRC.ynIncome, 1393, null, null, null, 375.05, null, null, null, 55.0, null, null, null, null, null],
+  ["大连", "DALIAN", "辽宁", 10002.1, SRC.lnStats, 2180.8, SRC.dlStats, 52007, SRC.dlIncome, 2125.1, "+20.4%", null, null, 1979, "+2.6%", null, null, 58.0, SRC.lnStats, SRC.lnStats, null, SRC.airport2025, null],
+  ["东莞", "DONGGUAN", "广东", 12760.2, SRC.gdStats, 4446, SRC.dgStats, 70803, SRC.dgIncome, null, null, null, null, null, null, null, null, 43.55, SRC.gdStats, null, null, null, null],
+  ["佛山", "FOSHAN", "广东", 13157.35, SRC.gdStats, 3945.94, SRC.fsStats, 71995, SRC.qqIncome, 700, null, null, null, null, null, null, null, 48.54, SRC.gdStats, null, null, null, null],
+  ["福州", "FUZHOU", "福建", 15112.32, SRC.fjStats, 5969.1, SRC.fzStats, 54007, SRC.fjIncome, 1416.4, "+19.4%", 6549.54, "+108.3%", 1612, "+5.4%", null, null, 58.96, SRC.fjStats, null, null, null, null],
+  ["广州", "GUANGZHOU", "广东", 32039.46, SRC.gdStats, 11032.38, SRC.china5e, 80591, SRC.qqIncome, 3768.16, "+6.8%", 15032, null, 8358.77, "+9.5%", null, null, 74.97, SRC.gdStats, SRC.gdStats, null, SRC.airport2025, null],
+  ["杭州", "HANGZHOU", "浙江", 23010.9, SRC.zjStats, 9499, SRC.china5e, 80017, SRC.qqIncome, 3387.2, "+9.5%", 10800, null, 5046, "+5.0%", 83, "-10", 70.1, SRC.zjStats, SRC.zjStats, null, SRC.airport2025, null],
+  ["哈尔滨", "HARBIN", "黑龙江", 6188.5, SRC.hljStat, 2557.7, SRC.hrbRetail, 39817, SRC.hrbIncome, 2818.4, "+21.8%", null, null, 2465, "+3.6%", null, null, 65.0, null, null, null, null, null],
+  ["合肥", "HEFEI", "安徽", 14210, SRC.ahStats, 5320.9, SRC.hfStats, 58930, SRC.net163, null, null, null, null, 1265, "+1.3%", null, null, 62.0, null, null, null, null, null],
+  ["惠州", "HUIZHOU", "广东", 6363.66, SRC.gdStats, 2093.22, SRC.hzStat, 50812, SRC.hzIncome, 556.1, "+12.5%", null, null, 330, null, null, null, 41.58, SRC.gdStats, null, null, null, null],
+  ["嘉兴", "JIAXING", "浙江", 7851.06, SRC.zjStats, 2972.14, SRC.jxStats, 72086, SRC.qqIncome, null, null, null, null, null, null, null, null, 48.0, null, null, null, null, null],
+  ["济南", "JINAN", "山东", 14210.09, SRC.sdStats, 5547.9, SRC.jnStats, 56961, SRC.sdIncome, 1399.9, "+10.8%", null, null, 2033, "+1.6%", null, null, 64.5, SRC.sdStats, null, null, null, null],
+  ["金华", "JINHUA", "浙江", 7313.47, SRC.zjStats, 4826.5, SRC.jhStats, 67877, SRC.net163, null, null, null, null, 320, null, null, null, 55.0, null, null, null, null, null],
+  ["昆明", "KUNMING", "云南", 8637.45, SRC.ynStats, 3817.69, SRC.kmRetail, 48754, SRC.kmIncome, 4890, null, null, null, 4970, "+5.3%", null, null, 67.2, SRC.ynStats, SRC.ynStats, null, SRC.airport2025, null],
+  ["丽江", "LIJIANG", "云南", 744.27, SRC.ynStats, 299.43, SRC.ljRetail, 27320, SRC.ynIncome, 1496, null, null, null, 863, "+6.6%", null, null, 60.0, null, null, null, null, null],
+  ["临沂", "LINYI", "山东", 6862.15, SRC.sdStats, 3877.5, SRC.lyStats, 39180, SRC.sdIncome, 1000, null, 928.5, "+4.9%", 246.73, "-0.1%", null, null, 52.2, SRC.sdStats, null, null, null, null],
+  ["南昌", "NANCHANG", "江西", 8141.69, SRC.jiangxiStats, 2921.78, SRC.ncStats, 51202, SRC.ncIncome, 2443, "+17.4%", null, null, 1193, "+5.9%", null, null, 52.0, null, null, null, null, null],
+  ["南京", "NANJING", "江苏", 19428.78, SRC.jsStats, 8135.85, SRC.china5e, 78243, SRC.qqIncome, 2390.2, "+9.3%", 8939, null, 3138, "+0.6%", null, null, 68.0, SRC.jsStats, SRC.jsStats, null, SRC.airport2025, null],
+  ["南宁", "NANNING", "广西", 6212.46, SRC.gxStats, 2186.7, SRC.nnRetail, 39659, SRC.nnIncome, 2000, "+12.5%", null, null, 1350, "-3.6%", null, null, 56.0, null, null, null, null, null],
+  ["南通", "NANTONG", "江苏", 12801.5, SRC.jsStats, 3855.4, SRC.ntStats, 57242, SRC.ntIncome, 1000, null, 1401.8, "+5.9%", 430, null, null, null, 48.0, null, null, null, null, null],
+  ["宁波", "NINGBO", "浙江", 18715.68, SRC.zjStats, 5703, SRC.nbStats, 77779, SRC.qqIncome, 1500, null, 6643, "+3.5%", 1614, "+9.5%", null, null, 60.0, SRC.zjStats, SRC.zjStats, null, SRC.airport2025, null],
+  ["青岛", "QINGDAO", "山东", 17560.67, SRC.sdStats, 6960.7, SRC.qdStats, 62738, SRC.sdIncome, 2100, "+13%", null, null, 2689, "+2.7%", null, null, 63.6, SRC.sdStats, SRC.sdStats, null, SRC.airport2025, null],
+  ["泉州", "QUANZHOU", "福建", 13778.34, SRC.fjStats, 6416.07, SRC.qzStats, 54858, SRC.fjIncome, 1348.30, "+11.3%", 3527.98, "+1.1%", 886, "+0.2%", null, null, 47.5, SRC.fjStats, null, null, null, null],
+  ["三亚", "SANYA", "海南", 1033.88, SRC.euobiz, 573.06, SRC.syRetail4, 38000, SRC.provIncome, 1025, "+8.7%", null, null, 2268, "+5.9%", null, null, 80.0, SRC.hiStats, SRC.hiStats, null, SRC.airport2025, null],
+  ["上海", "SHANGHAI", "上海", 56708.71, SRC.shStats, 16600.93, SRC.china5e, 91987, SRC.shStats, 6730, "+16.8%", 14037, "+5.9%", 13514.5, "+8.3%", 142, "-6", 79.0, SRC.shStats, SRC.shStats, null, SRC.airport2025, null],
+  ["汕头", "SHANTOU", "广东", 3023.83, SRC.gdStats, 1483.23, SRC.stRetail, 34847, SRC.sdIncome, 229.6, "+23.9%", null, null, 1023, "+18.0%", null, null, 57.71, SRC.gdStats, null, null, null, null],
+  ["绍兴", "SHAOXING", "浙江", 8932.13, SRC.zjStats, 3255, SRC.sxStats, 76732, SRC.qqIncome, 918.9, "+9.0%", null, null, null, null, null, null, 50.0, null, null, null, null, null],
+  ["沈阳", "SHENYANG", "辽宁", 9100.33, SRC.lnStats, 4195.4, SRC.syRetail, 51827, SRC.syIncome, 2400, null, null, null, 2491, "+4.9%", null, null, 60.0, null, null, null, null, null],
+  ["深圳", "SHENZHEN", "广东", 38731.8, SRC.gdStats, 10259.93, SRC.china5e, 84945, SRC.qqIncome, 3142, null, 11459, null, 6647, "+8.1%", null, null, 62.54, SRC.gdStats, SRC.gdStats, null, SRC.airport2025, null],
+  ["石家庄", "SHIJIAZHUANG", "河北", 8651.7, SRC.hebeiStats, 2787.5, SRC.sjzStats, 42085, SRC.sjzIncome, null, null, null, null, 1202, "+6.2%", null, null, 60.0, null, null, null, null, null],
+  ["苏州", "SUZHOU", "江苏", 27695.09, SRC.jsStats, 9092.2, SRC.china5e, 80796, SRC.qqIncome, 2227.4, "+9.1%", 13300, "+7.3%", null, null, null, null, 52.9, SRC.jsStats, SRC.jsStats, null, SRC.airport2025, null],
+  ["泰州", "TAIZHOU", "江苏", 7255.27, SRC.jsStats, 1834.75, SRC.tz2Stats, 52996, SRC.tz2Income, 506.79, "+15.1%", null, null, null, null, null, null, 48.0, null, null, null, null, null],
+  ["台州", "TAIZHOU2", "浙江", 7005.87, SRC.zjStats, 3084.34, SRC.tzStats, 67795, SRC.net163, null, null, null, null, 244.74, "+14.25%", null, null, 52.0, null, null, null, null, null],
+  ["唐山", "TANGSHAN", "河北", 10450.2, SRC.hebeiStats, 2420.9, SRC.tsRetail, 47200, SRC.tsIncome, 1259.0, "+12.3%", null, null, 58.3, "+14.8%", null, null, 42.0, null, null, null, null, null],
+  ["天津", "TIANJIN", "天津", 18539.82, SRC.tjStats, 4140.7, SRC.tianjinRetail, 55918, SRC.tjIncome, 3200, null, 11600, "+6%", 1986, "-1.0%", null, null, 65.0, SRC.tjStats, SRC.tjStats, null, SRC.airport2025, null],
+  ["潍坊", "WEIFANG", "山东", 8587.36, SRC.wfGDP, 3584.9, SRC.wfRetail, 45794, SRC.wfIncome, 1036.2, null, null, null, 44, "-0.2%", null, null, 50.3, SRC.wfGDP, null, null, null, null],
+  ["温州", "WENZHOU", "浙江", 10213.92, SRC.zjStats, 5143.9, SRC.wzStats, 73660, SRC.qqIncome, 1245.4, "+11.2%", 2926.2, "+4.7%", 1306, "+4.2%", null, null, 58.0, null, null, null, null, null],
+  ["武汉", "WUHAN", "湖北", 22147.35, SRC.hbStats, 9013.96, SRC.china5e, 62530, SRC.wuhanIncome, 4889, "+16.4%", 8701.11, "+3.5%", 3134, "-0.2%", 41, "+3", 68.1, SRC.hbStats, SRC.hbStats, null, SRC.airport2025, null],
+  ["无锡", "WUXI", "江苏", 16773.94, SRC.jsStats, 4418.47, SRC.wuxiStats, 75200, SRC.qqIncome, 1916.34, "+9.4%", null, null, 1098, "+4.5%", null, null, 51.0, SRC.jsStats, SRC.jsStats, null, SRC.airport2025, null],
+  ["厦门", "XIAMEN", "福建", 8980.37, SRC.fjStats, 3448.6, SRC.fjStats, 77762, SRC.qqIncome, 2135.77, "+11.8%", null, null, 2919, "+4.6%", null, null, 61.9, SRC.fjStats, SRC.fjStats, null, SRC.airport2025, null],
+  ["西安", "XIAN", "陕西", 13902.67, SRC.shaanxiStats, 5721.21, SRC.xaStats, 47496, SRC.xaIncome, 4026.2, "+7.1%", 7951.17, "+1.5%", 4853.6, "+3.2%", null, null, 69.05, SRC.shaanxiStats, SRC.shaanxiStats, null, SRC.airport2025, null],
+  ["西双版纳", "XISHUANGBANNA", "云南", 940.83, SRC.ynStats, 429.85, SRC.xsbnRetail, 29820, SRC.ynIncome, 776.53, "+4.2%", null, null, 772, "+7.7%", null, null, 55.0, SRC.ynStats, SRC.ynStats, null, SRC.airport2025, null],
+  ["徐州", "XUZHOU", "江苏", 9957.22, SRC.jsStats, 3398.7, SRC.xzStats, 42230, SRC.net163, null, null, null, null, 410, null, null, null, 48.0, null, null, null, null, null],
+  ["盐城", "YANCHENG", "江苏", 8045.28, SRC.jsStats, 2894.7, SRC.ycStats, 45713, SRC.net163, 661.99, "+10.4%", null, null, 200, null, null, null, 48.0, null, null, null, null, null],
+  ["扬州", "YANGZHOU", "江苏", 8056.75, SRC.jsStats, 1961.68, SRC.yzRetail, 54386, SRC.yzIncome, 1142.82, null, null, null, 416.36, "+14.1%", null, null, 50.0, null, null, null, null, null],
+  ["烟台", "YANTAI", "山东", 11350.98, SRC.sdStats, 4068.85, SRC.ytStats, 53562, SRC.sdIncome, 1265.19, null, 1625.51, "+19.8%", 804, "-6.9%", null, null, 50.0, null, null, null, null, null],
+  ["宜昌", "YICHANG", "湖北", 6464.42, SRC.euobiz, 2376.24, SRC.yc2Stats, 42714, SRC.ycIncome, 1427, "+22.5%", null, null, 340.6, "+10.8%", null, null, 49.7, SRC.euobiz, null, null, null, null],
+  ["榆林", "YULIN", "陕西", 7501.06, SRC.shaanxiStats, 1053.95, SRC.ylRetail, 38000, SRC.snIncome, 306, null, 673.1, "+2.3%", 310.65, "+19.9%", null, null, 35.0, null, null, null, null, null],
+  ["郑州", "ZHENGZHOU", "河南", 15244.6, SRC.hnStats, 6629.4, SRC.hnStats, 48021, SRC.hnStats, 2206.7, null, 9400, "+6.4%", 2919, "+2.4%", null, null, 58.0, null, null, null, null, null],
 ];
 
 SRC.syRetail = "https://tjj.hubei.gov.cn/tjsj/tjgb/ndtjgb/sztjgb/202504/P020250422586706343316.pdf";
@@ -828,10 +1022,10 @@ function renderTable() {
     const retail = c[5] ? `<span class="data-value retail">${c[5].toLocaleString()}</span>${srcLink(c[6])}` : '<span class="data-na">暂未公布</span>';
     const income = c[7] ? `<span class="data-value income">${c[7].toLocaleString()}</span>${srcLink(c[8])}` : '<span class="data-na">暂未公布</span>';
 
-    const tourism = c[9] ? `<span class="data-value tourism">${c[9].toLocaleString()}</span>${c[10] ? '<span class="data-sm ' + (c[10].startsWith('+') ? 'up' : 'down') + '">' + c[10] + '</span>' : ''}` : '<span class="data-na">暂无</span>';
-    const railway = c[11] ? `<span class="data-value railway">${c[11].toLocaleString()}</span>${c[12] ? '<span class="data-sm ' + (c[12].startsWith('+') ? 'up' : 'down') + '">' + c[12] + '</span>' : ''}` : '<span class="data-na">暂无</span>';
-    const airport = c[13] ? `<span class="data-value airport">${c[13].toLocaleString()}</span>${c[14] ? '<span class="data-sm ' + (c[14].startsWith('+') ? 'up' : 'down') + '">' + c[14] + '</span>' : ''}` : '<span class="data-na">暂无</span>';
-    const hotels = c[15] ? `<span class="data-value hotels">${c[15]}</span>${c[16] ? '<span class="data-sm ' + (c[16].startsWith('+') ? 'up' : 'down') + '">' + c[16] + '</span>' : ''}` : '<span class="data-na">暂无</span>';
+    const tourism = c[9] ? `<span class="data-value tourism">${c[9].toLocaleString()}</span>${c[10] ? '<span class="data-sm ' + (c[10].startsWith('+') ? 'up' : 'down') + '">' + c[10] + '</span>' : ''}${srcLink(c[19])}` : '<span class="data-na">暂无</span>';
+    const railway = c[11] ? `<span class="data-value railway">${c[11].toLocaleString()}</span>${c[12] ? '<span class="data-sm ' + (c[12].startsWith('+') ? 'up' : 'down') + '">' + c[12] + '</span>' : ''}${srcLink(c[20])}` : '<span class="data-na">暂无</span>';
+    const airport = c[13] ? `<span class="data-value airport">${c[13].toLocaleString()}</span>${c[14] ? '<span class="data-sm ' + (c[14].startsWith('+') ? 'up' : 'down') + '">' + c[14] + '</span>' : ''}${srcLink(c[21])}` : '<span class="data-na">暂无</span>';
+    const hotels = c[15] ? `<span class="data-value hotels">${c[15]}</span>${c[16] ? '<span class="data-sm ' + (c[16].startsWith('+') ? 'up' : 'down') + '">' + c[16] + '</span>' : ''}${srcLink(c[22])}` : '<span class="data-na">暂无</span>';
 
     const tertiary = c[17] ? `<span class="data-value tertiary">${c[17]}<span style="font-size:11px;color:#888">%</span></span>${c[18] ? srcLink(c[18]) : '<span class="est-tag">估算</span>'}` : '<span class="data-na">暂无</span>';
 
@@ -887,205 +1081,4 @@ function updateStats() {
 // 初始化
 initLetterFilter();
 renderTable();
-</script>
-
-<script>
-/* ========== macro-score 逻辑 ========== */
-const CITY_DATA = [
-  { name:'北京', gdp:52073.4, retail:13677.0, popInflow:5.55, tertiary:86.0, tertiaryOfficial:true },
-  { name:'长春', gdp:8005.59, retail:2551.17, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
-  { name:'长沙', gdp:15737.82, retail:5738.93, popInflow:4.2, tertiary:56.2, tertiaryOfficial:false },
-  { name:'常州', gdp:11158.71, retail:2918.1, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
-  { name:'成都', gdp:24763.61, retail:11434.1, popInflow:7.2, tertiary:60.3, tertiaryOfficial:false },
-  { name:'重庆', gdp:33757.93, retail:16688.5, popInflow:2.1, tertiary:53.2, tertiaryOfficial:false },
-  { name:'大理州', gdp:2010.93, retail:737.8, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
-  { name:'大连', gdp:10002.1, retail:2180.8, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
-  { name:'东莞', gdp:12760.2, retail:4446.0, popInflow:5.55, tertiary:43.55, tertiaryOfficial:true },
-  { name:'佛山', gdp:13157.35, retail:3945.94, popInflow:5.55, tertiary:48.54, tertiaryOfficial:true },
-  { name:'福州', gdp:15112.32, retail:5969.1, popInflow:5.55, tertiary:58.96, tertiaryOfficial:true },
-  { name:'广州', gdp:32039.46, retail:11032.38, popInflow:5.55, tertiary:74.97, tertiaryOfficial:true },
-  { name:'杭州', gdp:23010.9, retail:9499.0, popInflow:8.5, tertiary:70.1, tertiaryOfficial:false },
-  { name:'哈尔滨', gdp:6188.5, retail:2557.7, popInflow:5.55, tertiary:65.0, tertiaryOfficial:false },
-  { name:'合肥', gdp:14210.0, retail:5320.9, popInflow:5.55, tertiary:62.0, tertiaryOfficial:false },
-  { name:'惠州', gdp:6363.66, retail:2093.22, popInflow:5.55, tertiary:41.58, tertiaryOfficial:true },
-  { name:'嘉兴', gdp:7851.06, retail:2972.14, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
-  { name:'济南', gdp:14210.09, retail:5547.9, popInflow:5.55, tertiary:64.5, tertiaryOfficial:true },
-  { name:'金华', gdp:7313.47, retail:4826.5, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
-  { name:'昆明', gdp:8637.45, retail:3817.69, popInflow:5.55, tertiary:67.2, tertiaryOfficial:true },
-  { name:'丽江', gdp:744.27, retail:299.43, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
-  { name:'临沂', gdp:6862.15, retail:3877.5, popInflow:5.55, tertiary:52.2, tertiaryOfficial:true },
-  { name:'南昌', gdp:8141.69, retail:2921.78, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
-  { name:'南京', gdp:19428.78, retail:8135.85, popInflow:4.8, tertiary:68.0, tertiaryOfficial:true },
-  { name:'南宁', gdp:6212.46, retail:2186.7, popInflow:5.55, tertiary:56.0, tertiaryOfficial:false },
-  { name:'南通', gdp:12801.5, retail:3855.4, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
-  { name:'宁波', gdp:18715.68, retail:5703.0, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
-  { name:'青岛', gdp:17560.67, retail:6960.7, popInflow:5.55, tertiary:63.6, tertiaryOfficial:true },
-  { name:'泉州', gdp:13778.34, retail:6416.07, popInflow:5.55, tertiary:47.5, tertiaryOfficial:true },
-  { name:'三亚', gdp:1033.88, retail:573.06, popInflow:5.55, tertiary:80.0, tertiaryOfficial:false },
-  { name:'上海', gdp:56708.71, retail:16600.93, popInflow:5.55, tertiary:79.0, tertiaryOfficial:true },
-  { name:'汕头', gdp:3023.83, retail:1483.23, popInflow:5.55, tertiary:57.71, tertiaryOfficial:true },
-  { name:'绍兴', gdp:8932.13, retail:3255.0, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
-  { name:'沈阳', gdp:9100.33, retail:4195.4, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
-  { name:'深圳', gdp:38731.8, retail:10259.93, popInflow:5.55, tertiary:62.54, tertiaryOfficial:true },
-  { name:'石家庄', gdp:8651.7, retail:2787.5, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
-  { name:'苏州', gdp:27695.09, retail:9092.2, popInflow:6.3, tertiary:52.9, tertiaryOfficial:true },
-  { name:'泰州', gdp:7255.27, retail:1834.75, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
-  { name:'台州', gdp:7005.87, retail:3084.34, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
-  { name:'唐山', gdp:10450.2, retail:2420.9, popInflow:5.55, tertiary:42.0, tertiaryOfficial:false },
-  { name:'天津', gdp:18539.82, retail:4140.7, popInflow:5.55, tertiary:65.0, tertiaryOfficial:false },
-  { name:'潍坊', gdp:8587.36, retail:3584.9, popInflow:5.55, tertiary:50.3, tertiaryOfficial:true },
-  { name:'温州', gdp:10213.92, retail:5143.9, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
-  { name:'武汉', gdp:22147.35, retail:9013.96, popInflow:5.5, tertiary:68.1, tertiaryOfficial:true },
-  { name:'无锡', gdp:16773.94, retail:4418.47, popInflow:5.55, tertiary:51.0, tertiaryOfficial:false },
-  { name:'厦门', gdp:8980.37, retail:3448.6, popInflow:5.55, tertiary:61.9, tertiaryOfficial:true },
-  { name:'西安', gdp:13902.67, retail:5721.21, popInflow:5.8, tertiary:69.05, tertiaryOfficial:true },
-  { name:'西双版纳', gdp:940.83, retail:429.85, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
-  { name:'徐州', gdp:9957.22, retail:3398.7, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
-  { name:'盐城', gdp:8045.28, retail:2894.7, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
-  { name:'扬州', gdp:8056.75, retail:1961.68, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
-  { name:'烟台', gdp:11350.98, retail:4068.85, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
-  { name:'宜昌', gdp:6464.42, retail:2376.24, popInflow:5.55, tertiary:49.7, tertiaryOfficial:true },
-  { name:'榆林', gdp:7501.06, retail:1053.95, popInflow:5.55, tertiary:35.0, tertiaryOfficial:false },
-  { name:'郑州', gdp:15244.6, retail:6629.4, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
-];
-
-const INDICATORS = [
-  { key:'gdp',       label:'GDP 总值',       unit:'亿元', color:'#60a5fa', ring:'rgba(96,165,250,.25)' },
-  { key:'retail',    label:'社零总额',       unit:'亿元', color:'#34d399', ring:'rgba(52,211,153,.25)' },
-  { key:'popInflow', label:'人口净流入率',   unit:'%',    color:'#fbbf24', ring:'rgba(251,191,36,.25)' },
-  { key:'tertiary',  label:'服务业占比',     unit:'%',    color:'#f472b6', ring:'rgba(244,114,182,.25)' },
-];
-
-function minMax(val, min, max){
-  if(max === min) return 50;
-  return ((val - min) / (max - min)) * 100;
-}
-const RANGES = {};
-INDICATORS.forEach(ind => {
-  const vals = CITY_DATA.map(c => c[ind.key]);
-  RANGES[ind.key] = { min: Math.min(...vals), max: Math.max(...vals) };
-});
-function calcScores(rawWeights){
-  const sum = rawWeights.reduce((a,b)=>a+b, 0) || 1;
-  const w = rawWeights.map(v => v / sum);
-  const results = CITY_DATA.map(c => {
-    const norms = {}; let score = 0;
-    INDICATORS.forEach((ind, i) => {
-      norms[ind.key] = minMax(c[ind.key], RANGES[ind.key].min, RANGES[ind.key].max);
-      score += norms[ind.key] * w[i];
-    });
-    return { name:c.name, score, norms, raw:c };
-  });
-  results.sort((a, b) => b.score - a.score);
-  return { results, weights:w };
-}
-const sliderWrap = document.getElementById('sliderWrap');
-const sliders = [];
-INDICATORS.forEach((ind, i) => {
-  const div = document.createElement('div');
-  div.innerHTML = `
-    <div class="flex items-center justify-between mb-1.5">
-      <div class="flex items-center gap-2">
-        <span class="dot" style="background:${ind.color}"></span>
-        <span class="text-sm text-slate-300">${ind.label}</span>
-        <span class="text-[10px] text-slate-600">${ind.unit}</span>
-      </div>
-      <div class="flex items-baseline gap-1">
-        <span class="num text-lg font-bold text-white" data-val="${i}">25</span>
-        <span class="text-[10px] text-slate-600" data-pct="${i}">25.0%</span>
-      </div>
-    </div>
-    <input type="range" min="0" max="100" value="25" class="slider" data-idx="${i}" style="--ring:${ind.ring}">`;
-  sliderWrap.appendChild(div);
-  const slider = div.querySelector('input');
-  const valEl  = div.querySelector('[data-val]');
-  const pctEl  = div.querySelector('[data-pct]');
-  sliders.push({ el:slider, valEl, pctEl, color:ind.color });
-  slider.addEventListener('input', () => { valEl.textContent = slider.value; update(); });
-});
-const weightBar = document.getElementById('weightBar');
-const weightSumEl = document.getElementById('weightSum');
-function renderWeightBar(weights){
-  weightBar.innerHTML = weights.map((w, i) => `<div style="width:${(w*100).toFixed(1)}%;background:${INDICATORS[i].color};transition:width .4s cubic-bezier(.4,0,.2,1)"></div>`).join('');
-  weightSumEl.textContent = '合计 100%';
-}
-const chart = echarts.init(document.getElementById('chart'));
-function renderChart(results){
-  const names  = results.map(r => r.name);
-  const scores = results.map(r => Number(r.score.toFixed(2)));
-  chart.setOption({
-    grid: { left: 70, right: 60, top: 10, bottom: 24 },
-    xAxis: { type:'value', max:100, axisLabel:{ color:'#64748b', fontSize:11 }, splitLine:{ lineStyle:{ color:'rgba(148,163,184,.06)' } } },
-    yAxis: { type:'category', data:names, axisLabel:{ color:'#cbd5e1', fontSize:13, fontWeight:600 }, axisLine:{ show:false }, axisTick:{ show:false }, inverse:true },
-    tooltip:{
-      trigger:'axis', axisPointer:{ type:'shadow' }, backgroundColor:'rgba(15,23,42,.95)', borderColor:'rgba(148,163,184,.15)', textStyle:{ color:'#e2e8f0', fontSize:12 },
-      formatter: params => {
-        const idx = params[0].dataIndex; const r = results[idx];
-        let html = `<div style="font-weight:700;margin-bottom:6px">${r.name}</div>`;
-        html += `<div style="font-size:18px;font-weight:700;color:#60a5fa;margin-bottom:6px">${r.score.toFixed(1)} 分</div>`;
-        INDICATORS.forEach(ind => {
-          const tag = (ind.key==='tertiary') ? (r.raw.tertiaryOfficial ? ' · 官方' : ' · 估算') : '';
-          html += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;line-height:1.8"><span style="color:#94a3b8">${ind.label}</span><span style="color:${ind.color}">${r.norms[ind.key].toFixed(1)} · ${r.raw[ind.key]}${ind.unit}${tag}</span></div>`;
-        });
-        return html;
-      }
-    },
-    series:[{ type:'bar', data:scores, barWidth:'55%', label:{ show:true, position:'right', formatter: p => p.value.toFixed(1), color:'#94a3b8', fontSize:12, fontWeight:600 },
-      itemStyle:{ borderRadius:[0,6,6,0], color: p => { const s=p.value; const ratio=Math.min(s/100,1); const r1=Math.round(96+(34-96)*ratio); const g1=Math.round(165+(211-165)*ratio); const b1=Math.round(250+(153-250)*ratio); const c1=`rgb(${r1},${g1},${b1})`; const c2=`rgba(${r1},${g1},${b1},.3)`; return new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:c2},{offset:1,color:c1}]); } },
-      animationDuration:600, animationDurationUpdate:600, animationEasingUpdate:'cubicInOut' }],
-  });
-}
-const detailWrap = document.getElementById('detailWrap');
-function renderDetail(results, weights){
-  detailWrap.innerHTML = `
-    <div class="grid gap-1" style="grid-template-columns: 50px repeat(${INDICATORS.length},1fr) 50px">
-      <div class="text-[10px] text-slate-600 text-center pb-1">城市</div>
-      ${INDICATORS.map(ind => `<div class="text-[10px] text-slate-600 text-center pb-1" title="${ind.label}">${ind.label}</div>`).join('')}
-      <div class="text-[10px] text-slate-600 text-center pb-1">总分</div>
-      ${results.map((r, idx) => `
-        <div class="text-xs text-slate-300 font-medium flex items-center ${idx===0?'text-amber-400':''}">${idx+1}.${r.name}</div>
-        ${INDICATORS.map(ind => { const v=r.norms[ind.key]; return `<div class="flex items-center gap-1"><div class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full" style="width:${v}%;background:${ind.color};transition:width .5s cubic-bezier(.4,0,.2,1)"></div></div></div>`; }).join('')}
-        <div class="text-xs text-center font-bold ${idx===0?'text-amber-400':'text-slate-300'}">${r.score.toFixed(1)}</div>
-      `).join('')}
-    </div>`;
-}
-function update(){
-  const rawW = sliders.map(s => parseInt(s.el.value));
-  const { results, weights } = calcScores(rawW);
-  sliders.forEach((s, i) => { s.pctEl.textContent = (weights[i]*100).toFixed(1)+'%'; s.valEl.style.color = rawW[i]===0?'#475569':'#fff'; });
-  renderWeightBar(weights); renderChart(results); renderDetail(results, weights);
-}
-document.getElementById('resetBtn').addEventListener('click', () => { sliders.forEach(s => { s.el.value = 25; s.valEl.textContent = '25'; }); update(); });
-window.addEventListener('resize', () => chart.resize());
-update();
-
-/* ========== Tab 切换处理 ========== */
-(function() {
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const panels = {
-    db: document.getElementById('panel-db'),
-    mg: document.getElementById('panel-mg'),
-  };
-
-  function switchTab(name) {
-    tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-    Object.entries(panels).forEach(([k, el]) => el.classList.toggle('active', k === name));
-    // ECharts 在 hidden 时宽度为 0，切换到 mg 时必须 resize
-    if (name === 'mg' && typeof chart !== 'undefined' && chart && chart.resize) {
-      setTimeout(() => chart.resize(), 50);
-    }
-    // 切到 db 时重新渲染表格（避免某些状态丢失）
-    if (name === 'db' && typeof renderTable === 'function') {
-      setTimeout(() => renderTable(), 50);
-    }
-  }
-
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-  });
-})();
-</script>
-
-</body>
-</html>
-
+</script
