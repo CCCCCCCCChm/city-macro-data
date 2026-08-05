@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中国城市2025年经济数据库 & 宏观打分</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script defer src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
 /* ========== city-economy-database 原样式 ========== */
 
@@ -1081,4 +1081,971 @@ function updateStats() {
 // 初始化
 initLetterFilter();
 renderTable();
-</script
+</script>
+
+<script>
+/* ========== macro-score 逻辑 ========== */
+const CITY_DATA = [
+  { name:'北京', gdp:52073.4, retail:13677.0, popInflow:5.55, tertiary:86.0, tertiaryOfficial:true },
+  { name:'长春', gdp:8005.59, retail:2551.17, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
+  { name:'长沙', gdp:15737.82, retail:5738.93, popInflow:4.2, tertiary:56.2, tertiaryOfficial:false },
+  { name:'常州', gdp:11158.71, retail:2918.1, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
+  { name:'成都', gdp:24763.61, retail:11434.1, popInflow:7.2, tertiary:60.3, tertiaryOfficial:false },
+  { name:'重庆', gdp:33757.93, retail:16688.5, popInflow:2.1, tertiary:53.2, tertiaryOfficial:false },
+  { name:'大理州', gdp:2010.93, retail:737.8, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
+  { name:'大连', gdp:10002.1, retail:2180.8, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
+  { name:'东莞', gdp:12760.2, retail:4446.0, popInflow:5.55, tertiary:43.55, tertiaryOfficial:true },
+  { name:'佛山', gdp:13157.35, retail:3945.94, popInflow:5.55, tertiary:48.54, tertiaryOfficial:true },
+  { name:'福州', gdp:15112.32, retail:5969.1, popInflow:5.55, tertiary:58.96, tertiaryOfficial:true },
+  { name:'广州', gdp:32039.46, retail:11032.38, popInflow:5.55, tertiary:74.97, tertiaryOfficial:true },
+  { name:'杭州', gdp:23010.9, retail:9499.0, popInflow:8.5, tertiary:70.1, tertiaryOfficial:false },
+  { name:'哈尔滨', gdp:6188.5, retail:2557.7, popInflow:5.55, tertiary:65.0, tertiaryOfficial:false },
+  { name:'合肥', gdp:14210.0, retail:5320.9, popInflow:5.55, tertiary:62.0, tertiaryOfficial:false },
+  { name:'惠州', gdp:6363.66, retail:2093.22, popInflow:5.55, tertiary:41.58, tertiaryOfficial:true },
+  { name:'嘉兴', gdp:7851.06, retail:2972.14, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'济南', gdp:14210.09, retail:5547.9, popInflow:5.55, tertiary:64.5, tertiaryOfficial:true },
+  { name:'金华', gdp:7313.47, retail:4826.5, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
+  { name:'昆明', gdp:8637.45, retail:3817.69, popInflow:5.55, tertiary:67.2, tertiaryOfficial:true },
+  { name:'丽江', gdp:744.27, retail:299.43, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
+  { name:'临沂', gdp:6862.15, retail:3877.5, popInflow:5.55, tertiary:52.2, tertiaryOfficial:true },
+  { name:'南昌', gdp:8141.69, retail:2921.78, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
+  { name:'南京', gdp:19428.78, retail:8135.85, popInflow:4.8, tertiary:68.0, tertiaryOfficial:true },
+  { name:'南宁', gdp:6212.46, retail:2186.7, popInflow:5.55, tertiary:56.0, tertiaryOfficial:false },
+  { name:'南通', gdp:12801.5, retail:3855.4, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'宁波', gdp:18715.68, retail:5703.0, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
+  { name:'青岛', gdp:17560.67, retail:6960.7, popInflow:5.55, tertiary:63.6, tertiaryOfficial:true },
+  { name:'泉州', gdp:13778.34, retail:6416.07, popInflow:5.55, tertiary:47.5, tertiaryOfficial:true },
+  { name:'三亚', gdp:1033.88, retail:573.06, popInflow:5.55, tertiary:80.0, tertiaryOfficial:false },
+  { name:'上海', gdp:56708.71, retail:16600.93, popInflow:5.55, tertiary:79.0, tertiaryOfficial:true },
+  { name:'汕头', gdp:3023.83, retail:1483.23, popInflow:5.55, tertiary:57.71, tertiaryOfficial:true },
+  { name:'绍兴', gdp:8932.13, retail:3255.0, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
+  { name:'沈阳', gdp:9100.33, retail:4195.4, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
+  { name:'深圳', gdp:38731.8, retail:10259.93, popInflow:5.55, tertiary:62.54, tertiaryOfficial:true },
+  { name:'石家庄', gdp:8651.7, retail:2787.5, popInflow:5.55, tertiary:60.0, tertiaryOfficial:false },
+  { name:'苏州', gdp:27695.09, retail:9092.2, popInflow:6.3, tertiary:52.9, tertiaryOfficial:true },
+  { name:'泰州', gdp:7255.27, retail:1834.75, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'台州', gdp:7005.87, retail:3084.34, popInflow:5.55, tertiary:52.0, tertiaryOfficial:false },
+  { name:'唐山', gdp:10450.2, retail:2420.9, popInflow:5.55, tertiary:42.0, tertiaryOfficial:false },
+  { name:'天津', gdp:18539.82, retail:4140.7, popInflow:5.55, tertiary:65.0, tertiaryOfficial:false },
+  { name:'潍坊', gdp:8587.36, retail:3584.9, popInflow:5.55, tertiary:50.3, tertiaryOfficial:true },
+  { name:'温州', gdp:10213.92, retail:5143.9, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
+  { name:'武汉', gdp:22147.35, retail:9013.96, popInflow:5.5, tertiary:68.1, tertiaryOfficial:true },
+  { name:'无锡', gdp:16773.94, retail:4418.47, popInflow:5.55, tertiary:51.0, tertiaryOfficial:false },
+  { name:'厦门', gdp:8980.37, retail:3448.6, popInflow:5.55, tertiary:61.9, tertiaryOfficial:true },
+  { name:'西安', gdp:13902.67, retail:5721.21, popInflow:5.8, tertiary:69.05, tertiaryOfficial:true },
+  { name:'西双版纳', gdp:940.83, retail:429.85, popInflow:5.55, tertiary:55.0, tertiaryOfficial:false },
+  { name:'徐州', gdp:9957.22, retail:3398.7, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'盐城', gdp:8045.28, retail:2894.7, popInflow:5.55, tertiary:48.0, tertiaryOfficial:false },
+  { name:'扬州', gdp:8056.75, retail:1961.68, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
+  { name:'烟台', gdp:11350.98, retail:4068.85, popInflow:5.55, tertiary:50.0, tertiaryOfficial:false },
+  { name:'宜昌', gdp:6464.42, retail:2376.24, popInflow:5.55, tertiary:49.7, tertiaryOfficial:true },
+  { name:'榆林', gdp:7501.06, retail:1053.95, popInflow:5.55, tertiary:35.0, tertiaryOfficial:false },
+  { name:'郑州', gdp:15244.6, retail:6629.4, popInflow:5.55, tertiary:58.0, tertiaryOfficial:false },
+];
+
+const INDICATORS = [
+  { key:'gdp',       label:'GDP 总值',       unit:'亿元', color:'#60a5fa', ring:'rgba(96,165,250,.25)' },
+  { key:'retail',    label:'社零总额',       unit:'亿元', color:'#34d399', ring:'rgba(52,211,153,.25)' },
+  { key:'popInflow', label:'人口净流入率',   unit:'%',    color:'#fbbf24', ring:'rgba(251,191,36,.25)' },
+  { key:'tertiary',  label:'服务业占比',     unit:'%',    color:'#f472b6', ring:'rgba(244,114,182,.25)' },
+];
+
+function minMax(val, min, max){
+  if(max === min) return 50;
+  return ((val - min) / (max - min)) * 100;
+}
+const RANGES = {};
+INDICATORS.forEach(ind => {
+  const vals = CITY_DATA.map(c => c[ind.key]);
+  RANGES[ind.key] = { min: Math.min(...vals), max: Math.max(...vals) };
+});
+function calcScores(rawWeights){
+  const sum = rawWeights.reduce((a,b)=>a+b, 0) || 1;
+  const w = rawWeights.map(v => v / sum);
+  const results = CITY_DATA.map(c => {
+    const norms = {}; let score = 0;
+    INDICATORS.forEach((ind, i) => {
+      norms[ind.key] = minMax(c[ind.key], RANGES[ind.key].min, RANGES[ind.key].max);
+      score += norms[ind.key] * w[i];
+    });
+    return { name:c.name, score, norms, raw:c };
+  });
+  results.sort((a, b) => b.score - a.score);
+  return { results, weights:w };
+}
+const sliderWrap = document.getElementById('sliderWrap');
+const sliders = [];
+INDICATORS.forEach((ind, i) => {
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <div class="flex items-center justify-between mb-1.5">
+      <div class="flex items-center gap-2">
+        <span class="dot" style="background:${ind.color}"></span>
+        <span class="text-sm text-slate-300">${ind.label}</span>
+        <span class="text-[10px] text-slate-600">${ind.unit}</span>
+      </div>
+      <div class="flex items-baseline gap-1">
+        <span class="num text-lg font-bold text-white" data-val="${i}">25</span>
+        <span class="text-[10px] text-slate-600" data-pct="${i}">25.0%</span>
+      </div>
+    </div>
+    <input type="range" min="0" max="100" value="25" class="slider" data-idx="${i}" style="--ring:${ind.ring}">`;
+  sliderWrap.appendChild(div);
+  const slider = div.querySelector('input');
+  const valEl  = div.querySelector('[data-val]');
+  const pctEl  = div.querySelector('[data-pct]');
+  sliders.push({ el:slider, valEl, pctEl, color:ind.color });
+  slider.addEventListener('input', () => { valEl.textContent = slider.value; update(); });
+});
+const weightBar = document.getElementById('weightBar');
+const weightSumEl = document.getElementById('weightSum');
+function renderWeightBar(weights){
+  weightBar.innerHTML = weights.map((w, i) => `<div style="width:${(w*100).toFixed(1)}%;background:${INDICATORS[i].color};transition:width .4s cubic-bezier(.4,0,.2,1)"></div>`).join('');
+  weightSumEl.textContent = '合计 100%';
+}
+const chart = echarts.init(document.getElementById('chart'));
+function renderChart(results){
+  const names  = results.map(r => r.name);
+  const scores = results.map(r => Number(r.score.toFixed(2)));
+  chart.setOption({
+    grid: { left: 70, right: 60, top: 10, bottom: 24 },
+    xAxis: { type:'value', max:100, axisLabel:{ color:'#64748b', fontSize:11 }, splitLine:{ lineStyle:{ color:'rgba(148,163,184,.06)' } } },
+    yAxis: { type:'category', data:names, axisLabel:{ color:'#cbd5e1', fontSize:13, fontWeight:600 }, axisLine:{ show:false }, axisTick:{ show:false }, inverse:true },
+    tooltip:{
+      trigger:'axis', axisPointer:{ type:'shadow' }, backgroundColor:'rgba(15,23,42,.95)', borderColor:'rgba(148,163,184,.15)', textStyle:{ color:'#e2e8f0', fontSize:12 },
+      formatter: params => {
+        const idx = params[0].dataIndex; const r = results[idx];
+        let html = `<div style="font-weight:700;margin-bottom:6px">${r.name}</div>`;
+        html += `<div style="font-size:18px;font-weight:700;color:#60a5fa;margin-bottom:6px">${r.score.toFixed(1)} 分</div>`;
+        INDICATORS.forEach(ind => {
+          const tag = (ind.key==='tertiary') ? (r.raw.tertiaryOfficial ? ' · 官方' : ' · 估算') : '';
+          html += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;line-height:1.8"><span style="color:#94a3b8">${ind.label}</span><span style="color:${ind.color}">${r.norms[ind.key].toFixed(1)} · ${r.raw[ind.key]}${ind.unit}${tag}</span></div>`;
+        });
+        return html;
+      }
+    },
+    series:[{ type:'bar', data:scores, barWidth:'55%', label:{ show:true, position:'right', formatter: p => p.value.toFixed(1), color:'#94a3b8', fontSize:12, fontWeight:600 },
+      itemStyle:{ borderRadius:[0,6,6,0], color: p => { const s=p.value; const ratio=Math.min(s/100,1); const r1=Math.round(96+(34-96)*ratio); const g1=Math.round(165+(211-165)*ratio); const b1=Math.round(250+(153-250)*ratio); const c1=`rgb(${r1},${g1},${b1})`; const c2=`rgba(${r1},${g1},${b1},.3)`; return new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:c2},{offset:1,color:c1}]); } },
+      animationDuration:600, animationDurationUpdate:600, animationEasingUpdate:'cubicInOut' }],
+  });
+}
+const detailWrap = document.getElementById('detailWrap');
+function renderDetail(results, weights){
+  detailWrap.innerHTML = `
+    <div class="grid gap-1" style="grid-template-columns: 50px repeat(${INDICATORS.length},1fr) 50px">
+      <div class="text-[10px] text-slate-600 text-center pb-1">城市</div>
+      ${INDICATORS.map(ind => `<div class="text-[10px] text-slate-600 text-center pb-1" title="${ind.label}">${ind.label}</div>`).join('')}
+      <div class="text-[10px] text-slate-600 text-center pb-1">总分</div>
+      ${results.map((r, idx) => `
+        <div class="text-xs text-slate-300 font-medium flex items-center ${idx===0?'text-amber-400':''}">${idx+1}.${r.name}</div>
+        ${INDICATORS.map(ind => { const v=r.norms[ind.key]; return `<div class="flex items-center gap-1"><div class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full" style="width:${v}%;background:${ind.color};transition:width .5s cubic-bezier(.4,0,.2,1)"></div></div></div>`; }).join('')}
+        <div class="text-xs text-center font-bold ${idx===0?'text-amber-400':'text-slate-300'}">${r.score.toFixed(1)}</div>
+      `).join('')}
+    </div>`;
+}
+function update(){
+  const rawW = sliders.map(s => parseInt(s.el.value));
+  const { results, weights } = calcScores(rawW);
+  sliders.forEach((s, i) => { s.pctEl.textContent = (weights[i]*100).toFixed(1)+'%'; s.valEl.style.color = rawW[i]===0?'#475569':'#fff'; });
+  renderWeightBar(weights); renderChart(results); renderDetail(results, weights);
+}
+document.getElementById('resetBtn').addEventListener('click', () => { sliders.forEach(s => { s.el.value = 25; s.valEl.textContent = '25'; }); update(); });
+window.addEventListener('resize', () => chart.resize());
+update();
+
+/* ========== Tab 切换处理 ========== */
+(function() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panels = {
+    db: document.getElementById('panel-db'),
+    mg: document.getElementById('panel-mg'),
+    viz: document.getElementById('panel-viz'),
+    trend: document.getElementById('panel-trend'),
+  };
+
+  function switchTab(name) {
+    tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    Object.entries(panels).forEach(([k, el]) => el.classList.toggle('active', k === name));
+    // ECharts 在 hidden 时宽度为 0，切换到对应 tab 时必须 resize
+    if (name === 'mg' && typeof chart !== 'undefined' && chart && chart.resize) {
+      setTimeout(() => chart.resize(), 50);
+    }
+    if (name === 'viz' && typeof window.vizChart !== 'undefined' && window.vizChart && window.vizChart.resize) {
+      setTimeout(() => window.vizChart.resize(), 50);
+    }
+    if (name === 'trend' && typeof window.trendChart !== 'undefined' && window.trendChart && window.trendChart.resize) {
+      setTimeout(() => window.trendChart.resize(), 50);
+    }
+    // 切到 db 时重新渲染表格（避免某些状态丢失）
+    if (name === 'db' && typeof renderTable === 'function') {
+      setTimeout(() => renderTable(), 50);
+    }
+  }
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+})();
+
+/* ========== viz 可视化对比 逻辑 ========== */
+(function() {
+  const IND = {
+    gdp:      { label:'GDP', unit:'亿元' },
+    retail:   { label:'社零总额', unit:'亿元' },
+    income:   { label:'人均可支配收入', unit:'元' },
+    tourism:  { label:'旅游收入', unit:'亿元' },
+    railway:  { label:'铁路客运', unit:'万人次' },
+    airport:  { label:'机场吞吐', unit:'万人次' },
+    hotels:   { label:'星级饭店', unit:'家' },
+    tertiary: { label:'服务业占比', unit:'%' },
+  };
+  const PALETTES = [
+    { id:'vivid',   label:'明亮',   colors:['#1a237e','#00897b','#e65100','#6a1b9a','#c2185b','#3949ab','#00796b','#f9a825'] },
+    { id:'ocean',   label:'海洋',   colors:['#0d47a1','#1565c0','#1976d2','#1e88e5','#2196f3','#42a5f5','#64b5f6','#90caf9'] },
+    { id:'forest',  label:'森林',   colors:['#1b5e20','#2e7d32','#388e3c','#43a047','#4caf50','#66bb6a','#81c784','#a5d6a7'] },
+    { id:'sunset',  label:'日落',   colors:['#b71c1c','#e53935','#f4511e','#fb8c00','#ffb300','#ffca28','#ffd54f','#ff8a65'] },
+    { id:'mono',    label:'单色',   colors:[] }, // 由自定义基准色生成
+  ];
+
+  const citySel = document.getElementById('vizCitySel');
+  const indSel = document.getElementById('vizIndicator');
+  const typeBtns = document.querySelectorAll('#vizTypeBtns .type-btn');
+  const paletteWrap = document.getElementById('vizPalette');
+  const customColor = document.getElementById('vizCustomColor');
+  const fontSel = document.getElementById('vizFont');
+  const fontSizeSel = document.getElementById('vizFontSize');
+  const showLabel = document.getElementById('vizShowLabel');
+  const rounded = document.getElementById('vizRounded');
+  const smooth = document.getElementById('vizSmooth');
+  const horizontal = document.getElementById('vizHorizontal');
+  const hint = document.getElementById('vizHint');
+  const chartEl = document.getElementById('vizChart');
+
+  let state = { type:'bar', palette:'vivid', custom:'#1a237e' };
+  let vizChart = null;
+
+  // 1) 填充城市下拉（按 GDP 降序）
+  const sorted = cityData.slice().sort((a,b)=>(b[3]||0)-(a[3]||0));
+  citySel.innerHTML = sorted.map(c =>
+    `<option value="${c[0]}">${c[0]}（${c[1]}）· ${c[2]}</option>`).join('');
+  const pickDefault = ['北京','上海','广州','深圳'];
+  pickDefault.forEach(n => { const o = citySel.querySelector(`option[value="${n}"]`); if(o) o.selected = true; });
+
+  // 2) 图形类型按钮
+  typeBtns.forEach(btn => btn.addEventListener('click', () => {
+    typeBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.type = btn.dataset.type;
+  }));
+
+  // 3) 配色方案
+  function renderPalette() {
+    paletteWrap.innerHTML = PALETTES.map(p => {
+      const sw = p.id === 'mono'
+        ? `<span style="background:linear-gradient(135deg,#1a237e,#00bcd4)"></span>`
+        : `<span style="background:linear-gradient(135deg,${p.colors[0]},${p.colors[3]||p.colors[1]})"></span>`;
+      return `<div class="swatch ${state.palette===p.id?'active':''}" data-pal="${p.id}" title="${p.label}">${sw}</div>`;
+    }).join('');
+    paletteWrap.querySelectorAll('.swatch').forEach(s => s.addEventListener('click', () => {
+      state.palette = s.dataset.pal; renderPalette();
+    }));
+  }
+  renderPalette();
+  customColor.addEventListener('input', () => { state.custom = customColor.value; });
+
+  // 4) 快捷选择
+  function selectByName(names) {
+    Array.from(citySel.options).forEach(o => o.selected = names.includes(o.value));
+  }
+  document.getElementById('vizSelBSG').addEventListener('click', () => selectByName(['北京','上海','广州','深圳']));
+  document.getElementById('vizSelTop10').addEventListener('click', () => {
+    const top = sorted.filter(c=>c[3]).slice(0,10).map(c=>c[0]); selectByName(top);
+  });
+  document.getElementById('vizSelClear').addEventListener('click', () => selectByName([]));
+
+  function getPaletteColors() {
+    const p = PALETTES.find(x => x.id === state.palette);
+    if (p.id === 'mono') {
+      // 基于基准色生成明暗梯度
+      const base = state.custom;
+      return [base, shade(base, 18), shade(base, 36), shade(base, 54), shade(base, 72), shade(base,-15), shade(base,-30), shade(base,-45)];
+    }
+    return p.colors;
+  }
+  function shade(hex, percent) {
+    const n = parseInt(hex.replace('#',''),16);
+    let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+    const t = percent<0 ? 0 : 255; const p = Math.abs(percent)/100;
+    r=Math.round((t-r)*p+r); g=Math.round((t-g)*p+g); b=Math.round((t-b)*p+b);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  // 5) 生成图表
+  function render() {
+    const names = Array.from(citySel.selectedOptions).map(o => o.value);
+    const key = indSel.value;
+    if (names.length === 0) { hint.textContent = '⚠️ 请至少选择 1 个城市'; return; }
+    hint.textContent = '';
+    const meta = IND[key];
+    const colors = getPaletteColors();
+    const font = fontSel.value;
+    const fsize = parseInt(fontSizeSel.value);
+    const selected = names.map(n => cityData.find(c => c[0] === n)).filter(Boolean);
+    // 标记缺失：直接读原始数组，避免 getVal 把 null 折叠成 0
+    const IDX = { gdp:3, retail:5, income:7, tourism:9, railway:11, airport:13, hotels:15, tertiary:17 };
+    const dataPts = selected.map(c => {
+      const raw = c[IDX[key]];
+      const missing = (raw === null || raw === undefined);
+      const v = missing ? null : getVal(c, key);
+      return { name:c[0], value: v };
+    });
+    const labels = dataPts.map(d => d.name);
+    const seriesData = dataPts.map((d,i) => ({ value: d.value, itemStyle: d.value===null ? { color:'#d9d9d9' } : { color: colors[i % colors.length] } }));
+
+    if (!vizChart) {
+      chartEl.innerHTML = '';
+      vizChart = echarts.init(chartEl);
+      window.vizChart = vizChart;
+    }
+
+    // 缺失提示
+    const missing = dataPts.filter(d => d.value === null).map(d => d.name);
+    if (missing.length) hint.textContent = `提示：${missing.join('、')} 暂无「${meta.label}」数据，图中以灰色占位。`;
+    else hint.textContent = '';
+
+    let option;
+    if (state.type === 'pie') {
+      const pieData = dataPts.filter(d => d.value !== null).map(d => ({
+        name:d.name, value:d.value, itemStyle:{ color: colors[labels.indexOf(d.name) % colors.length] }
+      }));
+      option = {
+        color: colors,
+        textStyle: { fontFamily: font, fontSize: fsize },
+        tooltip: { trigger:'item', formatter: p => `${p.name}<br/>${meta.label}：${fmt(p.value)} ${meta.unit}<br/>占比：${p.percent}%` },
+        legend: { type:'scroll', bottom:0, textStyle:{ fontFamily:font, fontSize:fsize, color:'#555' } },
+        series: [{ type:'pie', radius:['28%','62%'], center:['50%','46%'],
+          data: pieData, label:{ show: showLabel.checked, formatter: p => `${p.name}\n${fmt(p.value)}`, fontFamily:font, fontSize:fsize },
+          labelLine:{ show: showLabel.checked },
+          itemStyle:{ borderRadius: rounded.checked ? 6 : 0, borderColor:'#fff', borderWidth:2 },
+          emphasis:{ scale:true, scaleSize:8 }
+        }]
+      };
+    } else {
+      const isH = horizontal.checked;
+      const catAxis = { type:'category', data: labels, axisLabel:{ fontFamily:font, fontSize:fsize, color:'#444' }, axisLine:{ lineStyle:{ color:'#d0d0d0' } }, axisTick:{ show:false } };
+      const valAxis = { type:'value', name:`${meta.label} (${meta.unit})`, nameTextStyle:{ fontFamily:font, fontSize:fsize, color:'#888' }, axisLabel:{ fontFamily:font, fontSize:fsize-1, color:'#666' }, splitLine:{ lineStyle:{ color:'#f0f0f0' } } };
+      const baseSeries = {
+        data: seriesData,
+        label:{ show: showLabel.checked, position: isH?'right':'top', formatter: p => p.value===null?'无':fmt(p.value), fontFamily:font, fontSize:fsize, color:'#333', fontWeight:600 },
+        itemStyle:{ borderRadius: (rounded.checked && !isH) ? [6,6,0,0] : (rounded.checked && isH) ? [0,6,6,0] : 0 },
+        animationDuration:600, animationDurationUpdate:600, animationEasingUpdate:'cubicInOut'
+      };
+      if (state.type === 'bar') {
+        baseSeries.type = 'bar';
+        baseSeries.barMaxWidth = 60;
+      } else {
+        baseSeries.type = 'line';
+        baseSeries.smooth = smooth.checked;
+        baseSeries.symbol = 'circle';
+        baseSeries.symbolSize = 9;
+        baseSeries.lineStyle = { width:3 };
+      }
+      option = {
+        textStyle: { fontFamily: font, fontSize: fsize },
+        grid: { left: 70, right: 40, top: 40, bottom: 50, containLabel:true },
+        tooltip: { trigger:'axis', axisPointer:{ type: state.type==='bar'?'shadow':'line' },
+          formatter: ps => { const p=ps[0]; return `${p.name}<br/>${meta.label}：<b>${p.value===null?'暂无数据':fmt(p.value)+' '+meta.unit}</b>`; } },
+        xAxis: isH ? valAxis : catAxis,
+        yAxis: isH ? catAxis : valAxis,
+        series: [baseSeries]
+      };
+    }
+    vizChart.setOption(option, true);
+  }
+
+  function fmt(v) { return v==null ? '—' : (v>=10000 ? v.toLocaleString() : (v % 1 === 0 ? v : v.toFixed(2))); }
+
+  document.getElementById('vizRender').addEventListener('click', render);
+  ['vizCustomColor','vizFont','vizFontSize','vizShowLabel','vizRounded','vizSmooth','vizHorizontal'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => { if (vizChart) render(); });
+  });
+  customColor.addEventListener('input', () => { state.custom = customColor.value; if (vizChart) render(); });
+
+  document.getElementById('vizDownload').addEventListener('click', () => {
+    if (!vizChart) { hint.textContent = '⚠️ 请先生成图表再下载'; return; }
+    const url = vizChart.getDataURL({ type:'png', backgroundColor:'#fff', pixelRatio:2 });
+    const a = document.createElement('a'); a.href = url; a.download = `城市对比_${IND[indSel.value].label}.png`; a.click();
+  });
+  document.getElementById('vizResetStyle').addEventListener('click', () => {
+    state = { type:'bar', palette:'vivid', custom:'#1a237e' };
+    typeBtns.forEach(b => b.classList.toggle('active', b.dataset.type==='bar'));
+    customColor.value = '#1a237e'; fontSel.selectedIndex = 0; fontSizeSel.selectedIndex = 1;
+    showLabel.checked = true; rounded.checked = true; smooth.checked = false; horizontal.checked = false;
+    renderPalette();
+    if (vizChart) render();
+  });
+})();
+
+/* ========== 城市历史时序数据（2021-2025），逐城累积 ==========
+   每个城市一个 const：HISTORICAL_DATA_<拼音>，结构见顶部注释。
+   指标 yoy 含义：gdp/retail/tourism/airport/income 为同比%；population 为绝对增量(万人)；service_ratio 为百分点(pp)。
+   查不到的年份填 null，绝不编造。后续城市直接在此处追加 const 即可，
+   并在 SRC 注释中记录来源；注册表 SRC 自动纳入已定义的城市常量。
+*/
+const HISTORICAL_DATA_WUHAN = [
+  {
+    city: "武汉",
+    year: 2021,
+    gdp: { value: 17716.76, yoy: "12.2%", unit: "亿元" },
+    retail: { value: 6795.04, yoy: "10.5%", unit: "亿元" },
+    population: { value: 1364.89, yoy: "+120.12万", unit: "万人" },
+    service_ratio: { value: 62.5, yoy: null, unit: "%" },
+    tourism: { value: 2920.84, yoy: null, unit: "亿元" },
+    railway: { value: null, yoy: null, unit: "万人次" },        // 待补（年鉴表84含2019-2023，需回查2021值）
+    airport: { value: 1979.6, yoy: "+54.6%", unit: "万人次" },  // yoy据2020年1280.2万倒推
+    income: { value: 55297, yoy: "9.8%", unit: "元" },
+    hotels: { value: 56, yoy: null, unit: "家" }
+  },
+  {
+    city: "武汉",
+    year: 2022,
+    gdp: { value: 18866.43, yoy: "4.0%", unit: "亿元" },
+    retail: { value: 6936.2, yoy: "2.1%", unit: "亿元" },
+    population: { value: 1373.90, yoy: "+9.01万", unit: "万人" },
+    service_ratio: { value: 61.9, yoy: "-0.6pp", unit: "%" },
+    tourism: { value: 2223.88, yoy: "-23.9%", unit: "亿元" },
+    railway: { value: 3728.95, yoy: null, unit: "万人次" },     // 倒推：据2023年yoy+109.8%推算，非直接公布值
+    airport: { value: 1160.6, yoy: "-41.4%", unit: "万人次" },
+    income: { value: 58449, yoy: "5.7%", unit: "元" },
+    hotels: { value: 48, yoy: "-14.3%", unit: "家" }
+  },
+  {
+    city: "武汉",
+    year: 2023,
+    gdp: { value: 20011.65, yoy: "5.7%", unit: "亿元" },
+    retail: { value: 7531.9, yoy: "8.6%", unit: "亿元" },
+    population: { value: 1377.40, yoy: "+3.50万", unit: "万人" },
+    service_ratio: { value: 63.6, yoy: "+1.7pp", unit: "%" },
+    tourism: { value: 3769.85, yoy: "+69.5%", unit: "亿元" },   // yoy据2022/2023官方值推算
+    railway: { value: 7822.94, yoy: "+109.8%", unit: "万人次" },
+    airport: { value: 2586.17, yoy: "+122.8%", unit: "万人次" },
+    income: { value: 61693, yoy: "5.5%", unit: "元" },          // yoy据2022/2023官方值推算
+    hotels: { value: 43, yoy: "-10.4%", unit: "家" }
+  },
+  {
+    city: "武汉",
+    year: 2024,
+    gdp: { value: 21106.23, yoy: "5.2%", unit: "亿元" },
+    retail: { value: 7931.87, yoy: "5.3%", unit: "亿元" },
+    population: { value: 1380.91, yoy: "+3.51万", unit: "万人" },
+    service_ratio: { value: 66.4, yoy: "+2.8pp", unit: "%" },
+    tourism: { value: 4200, yoy: "+11.2%", unit: "亿元" },      // 市文旅局发布约数（非公报精确值）
+    railway: { value: null, yoy: null, unit: "万人次" },        // 2024年鉴未覆盖，暂无权威值
+    airport: { value: 3140.6, yoy: "+21.4%", unit: "万人次" },
+    income: { value: 64346, yoy: "4.3%", unit: "元" },
+    hotels: { value: 38, yoy: "-11.6%", unit: "家" }
+  },
+  { city:"武汉", year:2025,
+    gdp:{value:22147.35,yoy:"5.6%",unit:"亿元"}, retail:{value:9013.96,yoy:"4.5%",unit:"亿元"},
+    population:{value:1386.19,yoy:"+0.4%",unit:"万人"}, service_ratio:{value:68.1,yoy:null,unit:"%"},
+    tourism:{value:null,yoy:null,unit:"亿元"}, railway:{value:8701.11,yoy:"3.5%",unit:"万人次"},
+    airport:{value:3134,yoy:null,unit:"万人次"}, income:{value:62530,yoy:"4.7%",unit:"元"},
+    hotels:{value:41,yoy:null,unit:"家"} }
+];
+
+const HISTORICAL_DATA_HANGZHOU = [
+  {
+    city: "杭州",
+    year: 2021,
+    gdp: { value: 18109, yoy: "8.5%", unit: "亿元" },
+    retail: { value: 6744, yoy: "11.4%", unit: "亿元" },
+    population: { value: 1220.4, yoy: "+23.9万", unit: "万人" },
+    service_ratio: { value: 67.9, yoy: null, unit: "%" },
+    tourism: { value: 1524.18, yoy: "6.9%", unit: "亿元" },
+    railway: { value: null, yoy: null, unit: "万人次" },        // 全市铁路旅客发送量无权威年度汇总（仅东站分站），不编造
+    airport: { value: 2816.4, yoy: "-0.2%", unit: "万人次" },  // 萧山机场
+    income: { value: 74700, yoy: "8.8%", unit: "元" },
+    hotels: { value: 105, yoy: null, unit: "家" }
+  },
+  {
+    city: "杭州",
+    year: 2022,
+    gdp: { value: 18753, yoy: "1.5%", unit: "亿元" },
+    retail: { value: 7294, yoy: "5.8%", unit: "亿元" },
+    population: { value: 1237.6, yoy: "+17.2万", unit: "万人" },
+    service_ratio: { value: 68.2, yoy: "+0.3pp", unit: "%" },
+    tourism: { value: 1298, yoy: "-14.9%", unit: "亿元" },     // 统计公报：旅游总收入1298亿，降14.9%
+    railway: { value: null, yoy: null, unit: "万人次" },
+    airport: { value: 2004, yoy: "-28.9%", unit: "万人次" },   // 萧山机场
+    income: { value: 77043, yoy: "3.1%", unit: "元" },
+    hotels: { value: 105, yoy: "0.0%", unit: "家" }            // 文旅局运行分析：2022与2021持平105家（统计公报记97家，口径差异）
+  },
+  {
+    city: "杭州",
+    year: 2023,
+    gdp: { value: 20059, yoy: "5.6%", unit: "亿元" },
+    retail: { value: 7671, yoy: "5.2%", unit: "亿元" },
+    population: { value: 1252.2, yoy: "+14.6万", unit: "万人" },
+    service_ratio: { value: 70.0, yoy: "+1.8pp", unit: "%" },
+    tourism: { value: null, yoy: null, unit: "亿元" },         // 官方口径冲突（工作会议预计超1800亿 vs 会议视频1299.4亿），且与2024全域口径不同，未填
+    railway: { value: null, yoy: null, unit: "万人次" },
+    airport: { value: 4117, yoy: "+105.5%", unit: "万人次" },  // 萧山机场
+    income: { value: 80587, yoy: "4.6%", unit: "元" },
+    hotels: { value: null, yoy: null, unit: "家" }
+  },
+  {
+    city: "杭州",
+    year: 2024,
+    gdp: { value: 21860, yoy: "4.7%", unit: "亿元" },
+    retail: { value: 7884, yoy: "2.8%", unit: "亿元" },        // 统计局口径（与2021-2023序列一致；部分报道记9151亿含其他口径）
+    population: { value: 1262.4, yoy: "+10.2万", unit: "万人" },
+    service_ratio: { value: 73.0, yoy: "+3.0pp", unit: "%" },
+    tourism: { value: 3450.3, yoy: "+8.5%", unit: "亿元" },    // 全域旅游综合收入（新口径，含过夜+一日游等，与2021-2022传统旅游总收入口径不同）
+    railway: { value: null, yoy: null, unit: "万人次" },
+    airport: { value: 4805.4, yoy: "+16.7%", unit: "万人次" }, // 萧山机场
+    income: { value: 83356, yoy: "3.4%", unit: "元" },
+    hotels: { value: null, yoy: null, unit: "家" }
+  },
+  { city:"杭州", year:2025,
+    gdp:{value:23011,yoy:"5.2%",unit:"亿元"}, retail:{value:9499,yoy:"3.8%",unit:"亿元"},
+    population:{value:1270.0,yoy:"+0.6%",unit:"万人"}, service_ratio:{value:73.9,yoy:null,unit:"%"},
+    tourism:{value:3387.2,yoy:"9.5%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:5046,yoy:null,unit:"万人次"}, income:{value:80017,yoy:"4.2%",unit:"元"},
+    hotels:{value:83,yoy:null,unit:"家"} }
+];
+
+// 上海：GDP/社零/人口/服务业占比/城镇收入/铁路/机场 均为市统计公报权威值（2021-2025连续）。
+// 口径说明：GDP 采用各年公报原始公布值（2024公报按五经普将2023修订为51404.47亿，此处沿用各年原始值47218.66以与2021/2022一致）；
+// 铁路=全市旅客发送量（公报直接给出，非分站口径）；机场=浦东+虹桥两场进出港旅客合计；城镇收入=城镇常住居民人均可支配收入。
+const HISTORICAL_DATA_SHANGHAI = [
+  {
+    city: "上海",
+    year: 2021,
+    gdp: { value: 43214.85, yoy: "8.1%", unit: "亿元" },
+    retail: { value: 18079.25, yoy: "13.5%", unit: "亿元" },
+    population: { value: 2489.43, yoy: "+1.07万", unit: "万人" },
+    service_ratio: { value: 73.3, yoy: "+0.2pp", unit: "%" },
+    tourism: { value: null, yoy: null, unit: "亿元" },        // 全市旅游总收入无权威口径（公报已不公布），不编造
+    railway: { value: 14035.33, yoy: "+17.2%", unit: "万人次" },
+    airport: { value: 6541.41, yoy: "+6.1%", unit: "万人次" }, // 浦东+虹桥两场进出港合计
+    income: { value: 82429, yoy: "7.8%", unit: "元" },
+    hotels: { value: null, yoy: null, unit: "家" }
+  },
+  {
+    city: "上海",
+    year: 2022,
+    gdp: { value: 44652.80, yoy: "-0.2%", unit: "亿元" },
+    retail: { value: 16442.14, yoy: "-9.1%", unit: "亿元" },
+    population: { value: 2475.89, yoy: "-13.54万", unit: "万人" },
+    service_ratio: { value: 74.1, yoy: "+0.8pp", unit: "%" },
+    tourism: { value: null, yoy: null, unit: "亿元" },
+    railway: { value: 8629.55, yoy: "-38.6%", unit: "万人次" },
+    airport: { value: 2889.00, yoy: "-55.8%", unit: "万人次" },
+    income: { value: 84034, yoy: "1.9%", unit: "元" },
+    hotels: { value: null, yoy: null, unit: "家" }
+  },
+  {
+    city: "上海",
+    year: 2023,
+    gdp: { value: 47218.66, yoy: "5.0%", unit: "亿元" },
+    retail: { value: 18515.50, yoy: "+12.6%", unit: "亿元" },
+    population: { value: 2487.45, yoy: "+11.56万", unit: "万人" },
+    service_ratio: { value: 75.2, yoy: "+1.1pp", unit: "%" },
+    tourism: { value: null, yoy: null, unit: "亿元" },
+    railway: { value: 18185.44, yoy: "+110.8%", unit: "万人次" },  // 据2022基数8629.55倒推（公报记"增长2.2倍"）
+    airport: { value: 9696.91, yoy: "+235.7%", unit: "万人次" },   // 据2022基数2889.00倒推（公报记"增长2.4倍"）
+    income: { value: 89477, yoy: "6.5%", unit: "元" },
+    hotels: { value: null, yoy: null, unit: "家" }
+  },
+  {
+    city: "上海",
+    year: 2024,
+    gdp: { value: 53926.71, yoy: "5.0%", unit: "亿元" },        // 2024公报原始值；同一公报按五经普将2023修订为51404.47亿
+    retail: { value: 17940.19, yoy: "-3.1%", unit: "亿元" },
+    population: { value: 2480.26, yoy: "-7.19万", unit: "万人" },
+    service_ratio: { value: 78.2, yoy: "+3.0pp", unit: "%" },
+    tourism: { value: null, yoy: null, unit: "亿元" },
+    railway: { value: 20683.56, yoy: "+13.7%", unit: "万人次" },
+    airport: { value: 12473.11, yoy: "+28.6%", unit: "万人次" },
+    income: { value: 93095, yoy: "4.0%", unit: "元" },
+    hotels: { value: null, yoy: null, unit: "家" }
+  },
+  { city:"上海", year:2025,
+    gdp:{value:56708.71,yoy:"5.4%",unit:"亿元"}, retail:{value:16600.93,yoy:"4.6%",unit:"亿元"},
+    population:{value:2485.41,yoy:"+0.2%",unit:"万人"}, service_ratio:{value:79.3,yoy:null,unit:"%"},
+    tourism:{value:6723.65,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:13514.6,yoy:"8.3%",unit:"万人次"}, income:{value:91987,yoy:"4.1%",unit:"元"},
+    hotels:{value:142,yoy:null,unit:"家"} }
+];
+
+const HISTORICAL_DATA_BEIJING = [
+  { city:"北京", year:2021,
+    gdp:{value:40269.6,yoy:"8.5%",unit:"亿元"}, retail:{value:14867.7,yoy:"8.4%",unit:"亿元"},
+    population:{value:2188.6,yoy:"-0.4万",unit:"万人"}, service_ratio:{value:81.7,yoy:null,unit:"%"},
+    tourism:{value:4166.2,yoy:"43.0%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:5769.0,yoy:null,unit:"万人次"}, income:{value:81518,yoy:"7.8%",unit:"元"},
+    hotels:{value:361,yoy:null,unit:"家"} },
+  { city:"北京", year:2022,
+    gdp:{value:41610.9,yoy:"0.7%",unit:"亿元"}, retail:{value:13794.2,yoy:"-7.2%",unit:"亿元"},
+    population:{value:2184.3,yoy:"-4.3万",unit:"万人"}, service_ratio:{value:83.8,yoy:"+2.1pp",unit:"%"},
+    tourism:{value:2520.3,yoy:"-39.5%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:4299.0,yoy:null,unit:"万人次"}, income:{value:84023,yoy:"3.1%",unit:"元"},
+    hotels:{value:349,yoy:"-3.3%",unit:"家"} },
+  { city:"北京", year:2023,
+    gdp:{value:43760.7,yoy:"5.2%",unit:"亿元"}, retail:{value:14462.7,yoy:"4.8%",unit:"亿元"},
+    population:{value:2185.8,yoy:"+1.5万",unit:"万人"}, service_ratio:{value:84.8,yoy:"+1.0pp",unit:"%"},
+    tourism:{value:5850.0,yoy:"+132%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:9229.9,yoy:null,unit:"万人次"}, income:{value:88650,yoy:"5.5%",unit:"元"},
+    hotels:{value:299,yoy:"-14.3%",unit:"家"} },
+  { city:"北京", year:2024,
+    gdp:{value:49843.1,yoy:"5.2%",unit:"亿元"}, retail:{value:14092.4,yoy:"-2.7%",unit:"亿元"},
+    population:{value:2183.2,yoy:"-2.6万",unit:"万人"}, service_ratio:{value:85.3,yoy:"+0.5pp",unit:"%"},
+    tourism:{value:6722.4,yoy:"+14.9%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:11678.1,yoy:null,unit:"万人次"}, income:{value:92464,yoy:"4.3%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} },
+  { city:"北京", year:2025,
+    gdp:{value:52073.4,yoy:"5.4%",unit:"亿元"}, retail:{value:13677.0,yoy:"-2.9%",unit:"亿元"},
+    population:{value:2180.0,yoy:"-0.1%",unit:"万人"}, service_ratio:{value:86.0,yoy:null,unit:"%"},
+    tourism:{value:7159.3,yoy:"6.5%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:12437,yoy:null,unit:"万人次"}, income:{value:89090,yoy:"4.3%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} }
+];
+
+const HISTORICAL_DATA_SHENZHEN = [
+  { city:"深圳", year:2021,
+    gdp:{value:30664.85,yoy:"6.7%",unit:"亿元"}, retail:{value:9498.12,yoy:"9.6%",unit:"亿元"},
+    population:{value:1768.16,yoy:"+12.15万",unit:"万人"}, service_ratio:{value:62.9,yoy:null,unit:"%"},
+    tourism:{value:1533.46,yoy:"16.3%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, // 公报仅公布"旅客运输总量"(全口径)，无铁路分口径权威值
+    airport:{value:3636.0,yoy:"-4.1%",unit:"万人次"}, income:{value:70847,yoy:"9.2%",unit:"元"},
+    hotels:{value:62,yoy:null,unit:"家"} },
+  { city:"深圳", year:2022,
+    gdp:{value:32387.68,yoy:"3.3%",unit:"亿元"}, retail:{value:9708.28,yoy:"2.2%",unit:"亿元"},
+    population:{value:1766.18,yoy:"-1.98万",unit:"万人"}, service_ratio:{value:61.6,yoy:"-1.3pp",unit:"%"},
+    tourism:{value:1129.22,yoy:"-26.4%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:2156.0,yoy:"-40.7%",unit:"万人次"}, income:{value:72718,yoy:"2.6%",unit:"元"},
+    hotels:{value:61,yoy:"-1.6%",unit:"家"} },
+  { city:"深圳", year:2023,
+    gdp:{value:34606.40,yoy:"6.0%",unit:"亿元"}, retail:{value:10486.19,yoy:"7.8%",unit:"亿元"},
+    population:{value:1779.01,yoy:"+12.83万",unit:"万人"}, service_ratio:{value:62.3,yoy:"+0.7pp",unit:"%"},
+    tourism:{value:2114.32,yoy:"87.2%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:5273.49,yoy:"144.6%",unit:"万人次"}, income:{value:76910,yoy:"5.8%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} },  // 2023星级饭店数统计局未公布
+  { city:"深圳", year:2024,
+    gdp:{value:36801.87,yoy:"5.8%",unit:"亿元"}, retail:{value:10637.70,yoy:"1.1%",unit:"亿元"},
+    population:{value:1798.95,yoy:"+19.94万",unit:"万人"}, service_ratio:{value:62.1,yoy:"-0.2pp",unit:"%"},
+    tourism:{value:2230.35,yoy:"5.5%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:6147.7,yoy:"16.6%",unit:"万人次"}, income:{value:81123,yoy:"5.5%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} },  // 2024星级饭店数无权威值
+  { city:"深圳", year:2025,
+    gdp:{value:38731.80,yoy:"5.5%",unit:"亿元"}, retail:{value:10259.93,yoy:"2.3%",unit:"亿元"},
+    population:{value:1824.85,yoy:"+1.44%",unit:"万人"}, service_ratio:{value:62.5,yoy:null,unit:"%"},
+    tourism:{value:null,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:6648.5,yoy:"8.1%",unit:"万人次"}, income:{value:84945,yoy:"4.7%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} }
+];
+// 广州（2026-08-04 采集，已同步进 HTML）
+// 口径：airport=白云机场单场旅客吞吐量；railway=广州铁路旅客年发送量（全市口径，与上海同源）；
+// hotels=星级饭店数量（广州市文广旅局名录）；income=全体居民人均可支配收入（广东统计年鉴10-5，与深圳同源）；
+// tourism=旅游业总收入（文旅局/公报口径，2023起含文旅消费总额）；2021星级饭店数无权威值→null
+const HISTORICAL_DATA_GUANGZHOU = [
+  { city:"广州", year:2021,
+    gdp:{value:28231.97,yoy:"8.1%",unit:"亿元"}, retail:{value:10122.56,yoy:"9.8%",unit:"亿元"},
+    population:{value:1881.06,yoy:"+7.03万",unit:"万人"}, service_ratio:{value:71.56,yoy:null,unit:"%"},
+    tourism:{value:2885.89,yoy:"7.7%",unit:"亿元"}, railway:{value:8963,yoy:null,unit:"万人次"},
+    airport:{value:4026.0,yoy:null,unit:"万人次"}, income:{value:68908,yoy:"8.9%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} },
+  { city:"广州", year:2022,
+    gdp:{value:28839.00,yoy:"1.0%",unit:"亿元"}, retail:{value:10298.15,yoy:"1.7%",unit:"亿元"},
+    population:{value:1873.41,yoy:"-7.65万",unit:"万人"}, service_ratio:{value:71.47,yoy:null,unit:"%"},
+    tourism:{value:2246,yoy:"-22.2%",unit:"亿元"}, railway:{value:6667,yoy:null,unit:"万人次"},
+    airport:{value:2610.0,yoy:null,unit:"万人次"}, income:{value:71358,yoy:"3.6%",unit:"元"},
+    hotels:{value:125,yoy:null,unit:"家"} },
+  { city:"广州", year:2023,
+    gdp:{value:30355.73,yoy:"4.6%",unit:"亿元"}, retail:{value:11012.62,yoy:"6.7%",unit:"亿元"},
+    population:{value:1882.70,yoy:"+9.29万",unit:"万人"}, service_ratio:{value:73.34,yoy:null,unit:"%"},
+    tourism:{value:3309.5,yoy:"47.4%",unit:"亿元"}, railway:{value:12800,yoy:null,unit:"万人次"},
+    airport:{value:6317.35,yoy:null,unit:"万人次"}, income:{value:74837,yoy:"4.9%",unit:"元"},
+    hotels:{value:123,yoy:null,unit:"家"} },
+  { city:"广州", year:2024,
+    gdp:{value:31032.50,yoy:"2.1%",unit:"亿元"}, retail:{value:11055.77,yoy:"0.03%",unit:"亿元"},
+    population:{value:1897.80,yoy:"+15.10万",unit:"万人"}, service_ratio:{value:73.66,yoy:null,unit:"%"},
+    tourism:{value:3528,yoy:"6.6%",unit:"亿元"}, railway:{value:13900,yoy:null,unit:"万人次"},
+    airport:{value:7636.93,yoy:null,unit:"万人次"}, income:{value:77804,yoy:"4.0%",unit:"元"},
+    hotels:{value:114,yoy:null,unit:"家"} },
+  { city:"广州", year:2025,
+    gdp:{value:32039.46,yoy:"4.0%",unit:"亿元"}, retail:{value:11032.38,yoy:"5.5%",unit:"亿元"},
+    population:{value:1910.10,yoy:"+0.65%",unit:"万人"}, service_ratio:{value:74.95,yoy:null,unit:"%"},
+    tourism:{value:3768.16,yoy:"6.8%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:8358.77,yoy:"9.5%",unit:"万人次"}, income:{value:80591,yoy:"3.6%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} }
+];
+// 重庆（2026-08-04 采集，已同步进 HTML）
+// 口径：airport=江北机场单场旅客吞吐量；railway=全市铁路旅客发送量（2021年无全市权威值→null）；
+// income=全体居民人均可支配收入（与深圳/广州同源）；tourism=旅游及相关产业增加值（产业口径，与其他城市"旅游总收入"口径不同，已在缺口说明标注）；
+// hotels=星级旅游饭店数量（市文旅委旅游业统计公报）；service_ratio=第三产业占GDP比重
+const HISTORICAL_DATA_CHONGQING = [
+  { city:"重庆", year:2021,
+    gdp:{value:27894.02,yoy:"8.3%",unit:"亿元"}, retail:{value:13967.67,yoy:null,unit:"亿元"},
+    population:{value:3212.43,yoy:"+3.50万",unit:"万人"}, service_ratio:{value:53.0,yoy:null,unit:"%"},
+    tourism:{value:1076.09,yoy:"9.9%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:3577.0,yoy:null,unit:"万人次"}, income:{value:33803,yoy:"9.7%",unit:"元"},
+    hotels:{value:150,yoy:null,unit:"家"} },
+  { city:"重庆", year:2022,
+    gdp:{value:29129.03,yoy:"2.6%",unit:"亿元"}, retail:{value:13926.08,yoy:"-0.3%",unit:"亿元"},
+    population:{value:3213.34,yoy:"+0.91万",unit:"万人"}, service_ratio:{value:53.0,yoy:null,unit:"%"},
+    tourism:{value:1063.26,yoy:"-1.2%",unit:"亿元"}, railway:{value:4823.6,yoy:null,unit:"万人次"},
+    airport:{value:2167.0,yoy:null,unit:"万人次"}, income:{value:35666,yoy:"5.5%",unit:"元"},
+    hotels:{value:139,yoy:null,unit:"家"} },
+  { city:"重庆", year:2023,
+    gdp:{value:30145.79,yoy:"6.1%",unit:"亿元"}, retail:{value:15130.25,yoy:"8.6%",unit:"亿元"},
+    population:{value:3191.43,yoy:"-21.91万",unit:"万人"}, service_ratio:{value:54.3,yoy:null,unit:"%"},
+    tourism:{value:1206.82,yoy:"13.5%",unit:"亿元"}, railway:{value:9538,yoy:null,unit:"万人次"},
+    airport:{value:4465.72,yoy:null,unit:"万人次"}, income:{value:37595,yoy:"5.4%",unit:"元"},
+    hotels:{value:124,yoy:null,unit:"家"} },
+  { city:"重庆", year:2024,
+    gdp:{value:32193.15,yoy:"5.7%",unit:"亿元"}, retail:{value:16190.41,yoy:"3.6%",unit:"亿元"},
+    population:{value:3190.47,yoy:"-0.96万",unit:"万人"}, service_ratio:{value:57.1,yoy:null,unit:"%"},
+    tourism:{value:1401.30,yoy:"7.4%",unit:"亿元"}, railway:{value:10300,yoy:"+8.4%",unit:"万人次"},
+    airport:{value:4867.7,yoy:null,unit:"万人次"}, income:{value:39713,yoy:"5.6%",unit:"元"},
+    hotels:{value:126,yoy:null,unit:"家"} },
+  { city:"重庆", year:2025,
+    gdp:{value:33757.93,yoy:"5.3%",unit:"亿元"}, retail:{value:16688.50,yoy:"3.1%",unit:"亿元"},
+    population:{value:3187.26,yoy:"-0.10%",unit:"万人"}, service_ratio:{value:58.8,yoy:null,unit:"%"},
+    tourism:{value:1471.09,yoy:"5.0%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:5009.5,yoy:"2.9%",unit:"万人次"}, income:{value:41580,yoy:"4.7%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} }
+];
+// —— 苏州（2026-08-04 采集，已同步进 HTML）—— 续采第2城
+// 口径：airport=无民航机场→4年全null（记为"无"，不适用）；railway=苏州公报不公布全市铁路发送量年度值→4年全null；
+// tourism=旅游总收入采用年鉴修订口径（2023年省文旅厅修正2019以来口径：2021=1785.54/2022=1659.9/2023=1849.5，与公报旧口径2294.4不可比，故不用公报值）；
+// hotels=星级宾馆（年鉴表16-19）；2024仅列四星及以上、无全市总数→null
+const HISTORICAL_DATA_SUZHOU = [
+  { city:"苏州", year:2021,
+    gdp:{value:22718.3,yoy:"8.7%",unit:"亿元"}, retail:{value:9031.3,yoy:"17.3%",unit:"亿元"},
+    population:{value:1284.78,yoy:"+0.8%",unit:"万人"}, service_ratio:{value:51.3,yoy:null,unit:"%"},
+    tourism:{value:1785.54,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:null,yoy:null,unit:"万人次"}, income:{value:68191,yoy:"9.0%",unit:"元"},
+    hotels:{value:93,yoy:null,unit:"家"} },
+  { city:"苏州", year:2022,
+    gdp:{value:23958.34,yoy:"2.0%",unit:"亿元"}, retail:{value:9010.71,yoy:"-0.2%",unit:"亿元"},
+    population:{value:1291.06,yoy:"+6.28万",unit:"万人"}, service_ratio:{value:51.1,yoy:null,unit:"%"},
+    tourism:{value:1659.9,yoy:"-7.0%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:null,yoy:null,unit:"万人次"}, income:{value:70819,yoy:"3.9%",unit:"元"},
+    hotels:{value:85,yoy:null,unit:"家"} },
+  { city:"苏州", year:2023,
+    gdp:{value:24653.4,yoy:"4.6%",unit:"亿元"}, retail:{value:9582.9,yoy:"6.4%",unit:"亿元"},
+    population:{value:1295.80,yoy:"+4.74万",unit:"万人"}, service_ratio:{value:52.4,yoy:null,unit:"%"},
+    tourism:{value:1849.5,yoy:"11.4%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:null,yoy:null,unit:"万人次"}, income:{value:74076,yoy:"4.6%",unit:"元"},
+    hotels:{value:72,yoy:null,unit:"家"} },
+  { city:"苏州", year:2024,
+    gdp:{value:26727.0,yoy:"6.0%",unit:"亿元"}, retail:{value:10043.7,yoy:"4.8%",unit:"亿元"},
+    population:{value:1298.7,yoy:"+2.90万",unit:"万人"}, service_ratio:{value:52.4,yoy:null,unit:"%"},
+    tourism:{value:2041.1,yoy:"10.4%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:null,yoy:null,unit:"万人次"}, income:{value:77524,yoy:"4.7%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} },
+  { city:"苏州", year:2025,
+    gdp:{value:27695.1,yoy:"5.4%",unit:"亿元"}, retail:{value:9092.2,yoy:"2.0%",unit:"亿元"},
+    population:{value:1304.77,yoy:"+0.5%",unit:"万人"}, service_ratio:{value:52.9,yoy:null,unit:"%"},
+    tourism:{value:2227.4,yoy:"9.1%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"},
+    airport:{value:null,yoy:null,unit:"万人次"}, income:{value:80796,yoy:"4.2%",unit:"元"},
+    hotels:{value:null,yoy:null,unit:"家"} }
+];
+// —— 南京（2026-08-04 采集，已同步进 HTML）—— 续采第3城
+// 口径：airport=禄口机场单场；railway=南京公报未公布全市铁路发送量年度权威值→4年全null；
+// tourism=旅游总收入（文旅局+年鉴口径）；income=全体居民人均可支配收入；service_ratio=第三产业占GDP比重（官方产业结构）
+const HISTORICAL_DATA_NANJING = [
+  { city:"南京", year:2021, gdp:{value:16355.32,yoy:"7.5%",unit:"亿元"}, retail:{value:7899.41,yoy:"9.7%",unit:"亿元"}, population:{value:942.34,yoy:"+10.37万",unit:"万人"}, service_ratio:{value:62.1,yoy:null,unit:"%"}, tourism:{value:2130.45,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:1760.69,yoy:null,unit:"万人次"}, income:{value:66140,yoy:"9.1%",unit:"元"}, hotels:{value:54,yoy:null,unit:"家"} },
+  { city:"南京", year:2022, gdp:{value:16907.85,yoy:"2.1%",unit:"亿元"}, retail:{value:7832.41,yoy:"-0.8%",unit:"亿元"}, population:{value:949.11,yoy:"+6.77万",unit:"万人"}, service_ratio:{value:62.2,yoy:null,unit:"%"}, tourism:{value:1946.18,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:1214.05,yoy:null,unit:"万人次"}, income:{value:69039,yoy:"4.4%",unit:"元"}, hotels:{value:54,yoy:null,unit:"家"} },
+  { city:"南京", year:2023, gdp:{value:17421.40,yoy:"4.6%",unit:"亿元"}, retail:{value:8201.07,yoy:"4.7%",unit:"亿元"}, population:{value:954.70,yoy:null,unit:"万人"}, service_ratio:{value:64.2,yoy:null,unit:"%"}, tourism:{value:1978.08,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:2734.05,yoy:null,unit:"万人次"}, income:{value:72112,yoy:"4.5%",unit:"元"}, hotels:{value:52,yoy:null,unit:"家"} },
+  { city:"南京", year:2024, gdp:{value:18500.81,yoy:"4.5%",unit:"亿元"}, retail:{value:8552.75,yoy:"4.3%",unit:"亿元"}, population:{value:957.14,yoy:null,unit:"万人"}, service_ratio:{value:66.7,yoy:null,unit:"%"}, tourism:{value:2187.28,yoy:"10.6%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:3117.97,yoy:null,unit:"万人次"}, income:{value:75180,yoy:"4.3%",unit:"元"}, hotels:{value:52,yoy:null,unit:"家"} },
+  { city:"南京", year:2025, gdp:{value:19428.78,yoy:"5.2%",unit:"亿元"}, retail:{value:8135.85,yoy:"3.5%",unit:"亿元"}, population:{value:963.85,yoy:"0.64%",unit:"万人"}, service_ratio:{value:68.0,yoy:null,unit:"%"}, tourism:{value:2390.2,yoy:"9.3%",unit:"亿元"}, railway:{value:8938.5,yoy:"3.1%",unit:"万人次"}, airport:{value:3137.82,yoy:"0.6%",unit:"万人次"}, income:{value:78243,yoy:"4.1%",unit:"元"}, hotels:{value:null,yoy:null,unit:"家"} }
+];
+// —— 长沙（2026-08-04 采集，已同步进 HTML）—— 续采第4城
+// 口径：airport=黄花机场单场；railway=长沙公报未公布全市铁路发送量年度权威值→4年全null；
+// tourism=旅游总收入/总花费（文旅局+统计公报口径，与武汉/杭州/上海/北京/深圳/广州同概念）；
+// 注：2023起文旅部执行新统计制度（"旅游总花费"口径扩大），2021/2022为旧口径，跨年量级跃升但均为真实公布值；
+// income=全体居民人均可支配收入（公报直给"全市居民"，与深圳/广州/重庆/苏州/南京同源）；
+// hotels=星级饭店（2021文旅部42家、2023/2024文旅局36家；2022无全市权威值→null）
+const HISTORICAL_DATA_CHANGSHA = [
+  { city:"长沙", year:2021, gdp:{value:13270.70,yoy:"7.5%",unit:"亿元"}, retail:{value:5111.57,yoy:"14.4%",unit:"亿元"}, population:{value:1023.93,yoy:"+1.8%",unit:"万人"}, service_ratio:{value:57.2,yoy:null,unit:"%"}, tourism:{value:1290.20,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:1999.0,yoy:null,unit:"万人次"}, income:{value:55587,yoy:"8.0%",unit:"元"}, hotels:{value:42,yoy:null,unit:"家"} },
+  { city:"长沙", year:2022, gdp:{value:13966.11,yoy:"4.5%",unit:"亿元"}, retail:{value:5235.56,yoy:"2.4%",unit:"亿元"}, population:{value:1042.06,yoy:"+1.8%",unit:"万人"}, service_ratio:{value:56.8,yoy:null,unit:"%"}, tourism:{value:1316.87,yoy:"2.07%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:1251.0,yoy:null,unit:"万人次"}, income:{value:58850,yoy:"5.9%",unit:"元"}, hotels:{value:null,yoy:null,unit:"家"} },
+  { city:"长沙", year:2023, gdp:{value:14331.98,yoy:"4.8%",unit:"亿元"}, retail:{value:5561.67,yoy:"6.2%",unit:"亿元"}, population:{value:1051.31,yoy:"+0.9%",unit:"万人"}, service_ratio:{value:59.4,yoy:null,unit:"%"}, tourism:{value:2193.05,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:2724.83,yoy:null,unit:"万人次"}, income:{value:61240,yoy:"4.1%",unit:"元"}, hotels:{value:36,yoy:null,unit:"家"} },
+  { city:"长沙", year:2024, gdp:{value:15268.78,yoy:"5.0%",unit:"亿元"}, retail:{value:5524.92,yoy:"4.2%",unit:"亿元"}, population:{value:1061.65,yoy:"+1.0%",unit:"万人"}, service_ratio:{value:61.1,yoy:null,unit:"%"}, tourism:{value:2423.41,yoy:"10.5%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:3121.81,yoy:null,unit:"万人次"}, income:{value:63660,yoy:"4.0%",unit:"元"}, hotels:{value:36,yoy:null,unit:"家"} },
+  { city:"长沙", year:2025, gdp:{value:15737.82,yoy:"4.0%",unit:"亿元"}, retail:{value:5738.93,yoy:"3.9%",unit:"亿元"}, population:{value:1072.14,yoy:"1.0%",unit:"万人"}, service_ratio:{value:61.9,yoy:null,unit:"%"}, tourism:{value:2580.47,yoy:"6.8%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:3025.37,yoy:"-3.1%",unit:"万人次"}, income:{value:66396,yoy:"4.3%",unit:"元"}, hotels:{value:36,yoy:null,unit:"家"} }
+];
+// 厦门 tourism=旅游总收入（2021/2022为旧口径、2023起文旅部新"旅游总花费"口径，跨年量级与武汉/杭州等同概念；2021/2022来自文旅局公开年报，2023/2024来自统计公报/文旅局发布）；
+// income=全体居民人均可支配收入（公报直给"全市居民"，与深圳/广州/重庆/苏州/南京/长沙同源）；
+// 机场=厦门高崎国际机场旅客吞吐量（2022为疫情低谷、2024创历史新高）；railway=公报不公布全市铁路旅客发送量→null；hotels=无全市权威星级饭店数→null
+const HISTORICAL_DATA_XIAMEN = [
+  { city:"厦门", year:2021, gdp:{value:7033.89,yoy:"8.1%",unit:"亿元"}, retail:{value:2584.10,yoy:"12.7%",unit:"亿元"}, population:{value:528.00,yoy:null,unit:"万人"}, service_ratio:{value:58.6,yoy:null,unit:"%"}, tourism:{value:1301.00,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:1495.21,yoy:null,unit:"万人次"}, income:{value:64362,yoy:"10.7%",unit:"元"}, hotels:{value:null,yoy:null,unit:"家"} },
+  { city:"厦门", year:2022, gdp:{value:7802.66,yoy:"4.4%",unit:"亿元"}, retail:{value:2665.36,yoy:"3.1%",unit:"亿元"}, population:{value:530.80,yoy:"+0.5%",unit:"万人"}, service_ratio:{value:58.2,yoy:null,unit:"%"}, tourism:{value:855.17,yoy:"-34.3%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:1012.56,yoy:null,unit:"万人次"}, income:{value:67999,yoy:"5.7%",unit:"元"}, hotels:{value:null,yoy:null,unit:"家"} },
+  { city:"厦门", year:2023, gdp:{value:8066.49,yoy:"3.1%",unit:"亿元"}, retail:{value:2743.30,yoy:"2.9%",unit:"亿元"}, population:{value:532.70,yoy:"+0.4%",unit:"万人"}, service_ratio:{value:64.1,yoy:null,unit:"%"}, tourism:{value:1567.31,yoy:null,unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:2410.41,yoy:null,unit:"万人次"}, income:{value:71062,yoy:"4.5%",unit:"元"}, hotels:{value:null,yoy:null,unit:"家"} },
+  { city:"厦门", year:2024, gdp:{value:8589.01,yoy:"5.5%",unit:"亿元"}, retail:{value:3329.81,yoy:"3.0%",unit:"亿元"}, population:{value:535.00,yoy:"+0.4%",unit:"万人"}, service_ratio:{value:63.0,yoy:null,unit:"%"}, tourism:{value:1911.03,yoy:"21.9%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:2791.00,yoy:null,unit:"万人次"}, income:{value:74249,yoy:"4.5%",unit:"元"}, hotels:{value:null,yoy:null,unit:"家"} },
+  { city:"厦门", year:2025, gdp:{value:8980.37,yoy:"5.7%",unit:"亿元"}, retail:{value:3448.60,yoy:"3.6%",unit:"亿元"}, population:{value:536.50,yoy:null,unit:"万人"}, service_ratio:{value:61.9,yoy:null,unit:"%"}, tourism:{value:2135.77,yoy:"11.8%",unit:"亿元"}, railway:{value:null,yoy:null,unit:"万人次"}, airport:{value:2919.37,yoy:"4.6%",unit:"万人次"}, income:{value:77762,yoy:"4.7%",unit:"元"}, hotels:{value:36,yoy:null,unit:"家"} }
+];
+// 自动注册所有已定义的历史数据（新增城市：先在上面声明 const，再在此对象追加一行即可）
+const HISTORICAL_INDEX = {
+  HISTORICAL_DATA_XIAMEN: HISTORICAL_DATA_XIAMEN,
+  HISTORICAL_DATA_WUHAN: HISTORICAL_DATA_WUHAN,
+  HISTORICAL_DATA_HANGZHOU: HISTORICAL_DATA_HANGZHOU,
+  HISTORICAL_DATA_SHANGHAI: HISTORICAL_DATA_SHANGHAI,
+  HISTORICAL_DATA_BEIJING: HISTORICAL_DATA_BEIJING,
+  HISTORICAL_DATA_SHENZHEN: HISTORICAL_DATA_SHENZHEN,
+  HISTORICAL_DATA_GUANGZHOU: HISTORICAL_DATA_GUANGZHOU,
+  HISTORICAL_DATA_CHONGQING: HISTORICAL_DATA_CHONGQING,
+  HISTORICAL_DATA_SUZHOU: HISTORICAL_DATA_SUZHOU,
+  HISTORICAL_DATA_NANJING: HISTORICAL_DATA_NANJING,
+  HISTORICAL_DATA_CHANGSHA: HISTORICAL_DATA_CHANGSHA,
+};
+
+/* ========== trend 趋势复盘 逻辑 ========== */
+(function(){
+  const YEARS = [2021, 2022, 2023, 2024, 2025];
+  const METRICS = [
+    { key:'gdp', label:'GDP', unit:'亿元' },
+    { key:'retail', label:'社会消费品零售总额', unit:'亿元' },
+    { key:'income', label:'全体居民人均可支配收入', unit:'元' },
+    { key:'service_ratio', label:'服务业占比', unit:'%' },
+    { key:'tourism', label:'旅游总收入', unit:'亿元' },
+    { key:'railway', label:'铁路旅客发送量', unit:'万人次' },
+    { key:'airport', label:'机场旅客吞吐量', unit:'万人次' },
+    { key:'population', label:'常住人口', unit:'万人' },
+    { key:'hotels', label:'星级饭店数', unit:'家' },
+  ];
+
+  // 口径差异提示：跨城对比时易引起误读的指标，命中（城市 + 指标）即自动弹注
+  const CALIBER_HINTS = [
+    {
+      cities: ['重庆'],
+      metricKeys: ['tourism'],
+      text: '⚠️ <b>口径提示：</b>重庆统计公报仅公布「旅游及相关产业增加值」，与武汉/杭州/上海/北京/深圳/广州公布的「旅游总收入」<b>不是同一口径</b>（前者为产业增加值，后者为消费端总收入）。量级虽接近，但含义不同，请勿直接横向比较。'
+    },
+    {
+      cities: ['苏州'],
+      metricKeys: ['airport'],
+      na: true,
+      text: '⚠️ <b>无民航机场：</b>苏州行政区域内无民用运输机场（最近为无锡硕放、上海两场），故「机场旅客吞吐量」不适用，统一记为"无"。'
+    },
+    {
+      cities: ['深圳'],
+      metricKeys: ['tourism'],
+      text: '⚠️ <b>口径提示：</b>深圳2025年统计公报仅公布「国内旅游收入」2356.70亿元(+5.7%)与「旅游外汇收入」110.67亿美元(+51.2%)，<b>未公布</b>可比的「旅游总收入/旅游总花费」合计，故2025年旅游项留空。请勿将2024(2230.35亿)与2025直接比较。'
+    }
+  ];
+  function updateCaliberHint() {
+    const city = citySel.value, key = metricSel.value;
+    const hit = CALIBER_HINTS.find(h => h.cities.includes(city) && h.metricKeys.includes(key));
+    hint.innerHTML = hit ? hit.text : '';
+  }
+
+  const citySel = document.getElementById('trendCity');
+  const metricSel = document.getElementById('trendMetric');
+  const typeBtns = document.getElementById('trendTypeBtns');
+  const hint = document.getElementById('trendHint');
+  const noteEl = document.getElementById('trendNote');
+  const tblWrap = document.getElementById('trendTableWrap');
+  const chartEl = document.getElementById('trendChart');
+  let trendChart = null;
+  let state = { type:'line' };
+
+  // 填充城市下拉（仅已采集）
+  const cities = Object.values(HISTORICAL_INDEX).map(arr => arr[0].city);
+  if (!cities.length) {
+    citySel.innerHTML = '<option value="">（暂无已采集城市）</option>';
+  } else {
+    citySel.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+  metricSel.innerHTML = METRICS.map(m => `<option value="${m.key}">${m.label}</option>`).join('');
+  // 选择城市 / 指标时即时弹注口径差异提示（无需点「生成趋势图」）
+  citySel.addEventListener('change', updateCaliberHint);
+  metricSel.addEventListener('change', updateCaliberHint);
+
+  typeBtns.querySelectorAll('.type-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      state.type = b.dataset.type;
+      typeBtns.querySelectorAll('.type-btn').forEach(x => x.classList.toggle('active', x === b));
+      if (trendChart) render();
+    });
+  });
+
+  function fmt(v) { return v==null ? '—' : (v>=10000 ? v.toLocaleString() : (v % 1 === 0 ? v : v.toFixed(2))); }
+
+  function render() {
+    const city = citySel.value;
+    const key = metricSel.value;
+    if (!city || !HISTORICAL_INDEX[Object.keys(HISTORICAL_INDEX).find(k => HISTORICAL_INDEX[k][0].city === city)]) {
+      hint.textContent = '⚠️ 暂无已采集城市，请等待数据累积。';
+      return;
+    }
+    const arr = Object.values(HISTORICAL_INDEX).find(a => a[0].city === city);
+    const meta = METRICS.find(m => m.key === key);
+    const caliber = CALIBER_HINTS.find(h => h.cities.includes(city) && h.metricKeys.includes(key));
+    const naCaliber = !!(caliber && caliber.na);
+    const byYear = {};
+    arr.forEach(r => byYear[r.year] = r[key]);
+
+    const values = YEARS.map(y => { const d = byYear[y]; return (d && d.value !== undefined) ? d.value : null; });
+    const missingYears = YEARS.filter((y,i) => values[i] === null);
+
+    if (!trendChart) { chartEl.innerHTML = ''; trendChart = echarts.init(chartEl); window.trendChart = trendChart; }
+    const colors = ['#1a237e','#e53935','#00897b','#fb8c00','#6a1b9a','#3949ab','#00838f','#c0ca33','#d81b60'];
+
+    const catAxis = { type:'category', data: YEARS.map(String), boundaryGap: state.type==='bar',
+      axisLabel:{ fontFamily:'Microsoft YaHei', fontSize:13, color:'#444' }, axisLine:{ lineStyle:{ color:'#d0d0d0' } }, axisTick:{ show:false } };
+    const valAxis = { type:'value', name:`${meta.label}（${meta.unit}）`, nameTextStyle:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#888' },
+      axisLabel:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#666' }, splitLine:{ lineStyle:{ color:'#f0f0f0' } } };
+
+    const series = [{
+      name: meta.label, type: state.type, data: values,
+      smooth: state.type==='line', symbol:'circle', symbolSize:9, lineStyle:{ width:3 },
+      itemStyle:{ color: colors[0] }, barMaxWidth: 46,
+      label:{ show:true, position: state.type==='bar' ? 'top' : 'top', formatter: p => p.value===null?(naCaliber?'无':'缺'):fmt(p.value),
+        fontFamily:'Microsoft YaHei', fontSize:12, color:'#333', fontWeight:600 },
+      connectNulls: false,
+      areaStyle: state.type==='line' ? { color:'rgba(26,35,126,0.06)' } : undefined,
+      markPoint: state.type==='bar' ? undefined : { symbolSize:0, label:{ show:false } }
+    }];
+
+    trendChart.setOption({
+      textStyle: { fontFamily:'Microsoft YaHei', fontSize:13 },
+      grid: { left:70, right:40, top:50, bottom:50, containLabel:true },
+      tooltip: { trigger:'axis', axisPointer:{ type: state.type==='bar'?'shadow':'line' },
+        formatter: ps => { const p=ps[0]; const d = byYear[+p.name];
+          let s = `${p.name}年 · ${city}<br/>${meta.label}：<b>${p.value===null?(naCaliber?'无（不适用）':'暂无数据'):fmt(p.value)+' '+meta.unit}</b>`;
+          if (d && d.yoy) s += `<br/>同比/变化：${d.yoy}`;
+          return s; } },
+      xAxis: catAxis, yAxis: valAxis, series
+    }, true);
+
+    // 明细表
+    let html = `<table class="trend-tbl"><thead><tr><th>指标 / 年份</th>${YEARS.map(y=>`<th>${y}</th>`).join('')}</tr></thead><tbody>`;
+    html += `<tr><td class="metric-name">${meta.label}（${meta.unit}）</td>`;
+    YEARS.forEach(y => { const d = byYear[y]; const v = (d && d.value!==undefined) ? d.value : null;
+      html += `<td class="${v===null?'nullval':''}">${v===null?(naCaliber?'无':'—'):fmt(v)+' '+meta.unit}</td>`; });
+    html += `</tr><tr><td class="metric-name">同比/变化</td>`;
+    YEARS.forEach(y => { const d = byYear[y]; html += `<td class="${d&&d.yoy?'':'nullval'}">${d&&d.yoy?d.yoy:'—'}</td>`; });
+    html += `</tr></tbody></table>`;
+    tblWrap.innerHTML = html;
+
+    // 口径 / 适用性 说明
+    hint.innerHTML = caliber ? caliber.text : '';
+    if (naCaliber) {
+      noteEl.innerHTML = `<b>不适用提示：</b>${city} 的「${meta.label}」无民航机场，不适用，统一记为"无"。`;
+    } else if (missingYears.length) {
+      noteEl.innerHTML = `<b>数据缺口提示：</b>${city} 的「${meta.label}」在 ${missingYears.join('、')} 年暂无权威公开数据（已留空，未编造）。`;
+    } else {
+      noteEl.innerHTML = '';
+    }
+    if (caliber && !caliber.na) {
+      noteEl.innerHTML += `<br/><span style="color:#b00;">${caliber.text}</span>`;
+    }
+  }
+
+  document.getElementById('trendRender').addEventListener('click', render);
+})();
+</script>
+
+</body>
+</html>
+
