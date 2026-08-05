@@ -363,6 +363,31 @@ tbody td { padding: 10px 10px; vertical-align: top; }
         <label class="chk"><input type="checkbox" id="vizSmooth"> 折线平滑</label>
         <label class="chk"><input type="checkbox" id="vizHorizontal"> 横向柱状图</label>
       </div>
+      <div class="field-row" style="margin-bottom:14px;">
+        <div class="field" style="flex:1;min-width:320px;">
+          <label>图表标题（选填，导出时显示在图片顶部）</label>
+          <input type="text" id="vizTitle" placeholder="选填：例如「2025年主要城市GDP对比」" style="width:100%;padding:9px 11px;border:1px solid #d8dee9;border-radius:9px;font-size:13px;background:#fff;color:#1f2d3d;box-sizing:border-box;outline:none;">
+        </div>
+      </div>
+      <div class="field-row" style="margin-bottom:14px;">
+        <div class="field" style="min-width:210px;">
+          <label>导出比例（适配PPT）</label>
+          <select id="vizExportRatio" class="viz-sel">
+            <option value="original">原始比例</option>
+            <option value="16:9" selected>16:9 宽屏</option>
+            <option value="4:3">4:3 传统</option>
+            <option value="square">方形</option>
+          </select>
+        </div>
+        <div class="field" style="min-width:210px;">
+          <label>导出清晰度</label>
+          <select id="vizExportDpi" class="viz-sel">
+            <option value="1">标准 1x</option>
+            <option value="2" selected>高清 2x</option>
+            <option value="3">超清 3x</option>
+          </select>
+        </div>
+      </div>
       <div class="viz-actions" style="margin-top:16px;">
         <button class="btn-main" id="vizRender">生成图表</button>
         <button class="btn-sub" id="vizDownload">下载图片 (PNG)</button>
@@ -399,12 +424,49 @@ tbody td { padding: 10px 10px; vertical-align: top; }
           </div>
         </div>
         <div class="field">
+          <label>图表内容</label>
+          <div id="trendContentBtns" style="display:flex;gap:8px;">
+            <button class="type-btn active" data-content="total">总量</button>
+            <button class="type-btn" data-content="yoy">同比变化</button>
+            <button class="type-btn" data-content="combo">复合图</button>
+          </div>
+        </div>
+        <div class="field">
           <label>折线颜色</label>
           <div id="trendColorWrap" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"></div>
         </div>
         <div class="field">
           <label>&nbsp;</label>
           <button id="trendRender" class="btn-main">生成趋势图</button>
+        </div>
+      </div>
+      <div class="field-row" style="margin-top:8px;">
+        <div class="field" style="flex:1;min-width:320px;">
+          <label>图表标题（选填，导出时显示在图片顶部）</label>
+          <input type="text" id="trendTitle" placeholder="选填：例如「上海GDP逐年走势」" style="width:100%;padding:9px 11px;border:1px solid #d8dee9;border-radius:9px;font-size:13px;background:#fff;color:#1f2d3d;box-sizing:border-box;outline:none;">
+        </div>
+      </div>
+      <div class="field-row" style="margin-top:8px;">
+        <div class="field" style="min-width:210px;">
+          <label>导出比例（适配PPT）</label>
+          <select id="trendExportRatio" class="trend-sel">
+            <option value="original">原始比例</option>
+            <option value="16:9" selected>16:9 宽屏</option>
+            <option value="4:3">4:3 传统</option>
+            <option value="square">方形</option>
+          </select>
+        </div>
+        <div class="field" style="min-width:210px;">
+          <label>导出清晰度</label>
+          <select id="trendExportDpi" class="trend-sel">
+            <option value="1">标准 1x</option>
+            <option value="2" selected>高清 2x</option>
+            <option value="3">超清 3x</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="trendDownload" class="btn-sub">下载图片 (PNG)</button>
         </div>
       </div>
       <div id="trendHint" class="trend-hint"></div>
@@ -1101,6 +1163,37 @@ renderTable();
    把本块所有逻辑包进 DOMContentLoaded，确保 echarts 已就绪、顶层 echarts.init 不再崩溃，
    标签页点击监听 / viz / trend 等 IIFE 才能正常绑定。 */
 document.addEventListener('DOMContentLoaded', function() {
+/* ========== 通用：图表导出为 PNG（适配 PPT 拉伸排版） ========== */
+const EXPORT_SIZES = {
+  'original': null,          // 使用当前容器尺寸
+  '16:9': [1280, 720],       // 宽屏，适配 PPT 全幅
+  '4:3':  [960, 720],        // 传统画幅
+  'square':[800, 800]        // 方形卡片
+};
+function exportChart(chart, filename, ratio, dpi, title) {
+  const el = chart.getDom();
+  const prevW = el.style.width, prevH = el.style.height;
+  const size = EXPORT_SIZES[ratio];
+  if (size) { el.style.width = size[0] + 'px'; el.style.height = size[1] + 'px'; chart.resize(); }
+  const hasTitle = !!(title && title.trim());
+  const prevOption = hasTitle ? chart.getOption() : null;
+  let url;
+  try {
+    if (hasTitle) {
+      const h = size ? size[1] : (parseInt(prevH) || 480);
+      chart.setOption({
+        title: { show:true, text: title.trim(), left:'center', top:'4%',
+                 textStyle:{ fontSize: Math.round(h*0.05), color:'#1f2d3d', fontWeight:'bold' } },
+        grid: { top:'18%' }
+      }, { silent:true });
+    }
+    url = chart.getDataURL({ type:'png', backgroundColor:'#fff', pixelRatio: dpi });
+  } finally {
+    if (prevOption) chart.setOption(prevOption, true);
+    el.style.width = prevW; el.style.height = prevH; chart.resize();
+  }
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+}
 /* ========== macro-score 逻辑 ========== */
 const CITY_DATA = [
   { name:'北京', gdp:52073.4, retail:13677.0, popInflow:5.55, tertiary:86.0, tertiaryOfficial:true },
@@ -1509,8 +1602,10 @@ update();
 
   document.getElementById('vizDownload').addEventListener('click', () => {
     if (!vizChart) { hint.textContent = '⚠️ 请先生成图表再下载'; return; }
-    const url = vizChart.getDataURL({ type:'png', backgroundColor:'#fff', pixelRatio:2 });
-    const a = document.createElement('a'); a.href = url; a.download = `城市对比_${IND[indSel.value].label}.png`; a.click();
+    const ratio = document.getElementById('vizExportRatio').value;
+    const dpi = +document.getElementById('vizExportDpi').value;
+    const title = document.getElementById('vizTitle').value;
+    exportChart(vizChart, `城市对比_${IND[indSel.value].label}.png`, ratio, dpi, title);
   });
   document.getElementById('vizResetStyle').addEventListener('click', () => {
     state = { type:'bar', palette:'vivid', custom:'#1a237e' };
@@ -1940,15 +2035,15 @@ const HISTORICAL_INDEX = {
 (function(){
   const YEARS = [2021, 2022, 2023, 2024, 2025];
   const METRICS = [
-    { key:'gdp', label:'GDP', unit:'亿元' },
-    { key:'retail', label:'社会消费品零售总额', unit:'亿元' },
-    { key:'income', label:'全体居民人均可支配收入', unit:'元' },
-    { key:'service_ratio', label:'服务业占比', unit:'%' },
-    { key:'tourism', label:'旅游总收入', unit:'亿元' },
-    { key:'railway', label:'铁路旅客发送量', unit:'万人次' },
-    { key:'airport', label:'机场旅客吞吐量', unit:'万人次' },
-    { key:'population', label:'常住人口', unit:'万人' },
-    { key:'hotels', label:'星级饭店数', unit:'家' },
+    { key:'gdp', label:'GDP', unit:'亿元', yoyUnit:'%' },
+    { key:'retail', label:'社会消费品零售总额', unit:'亿元', yoyUnit:'%' },
+    { key:'income', label:'全体居民人均可支配收入', unit:'元', yoyUnit:'%' },
+    { key:'service_ratio', label:'服务业占比', unit:'%', yoyUnit:'pp' },
+    { key:'tourism', label:'旅游总收入', unit:'亿元', yoyUnit:'%' },
+    { key:'railway', label:'铁路旅客发送量', unit:'万人次', yoyUnit:'%' },
+    { key:'airport', label:'机场旅客吞吐量', unit:'万人次', yoyUnit:'%' },
+    { key:'population', label:'常住人口', unit:'万人', yoyUnit:'万' },
+    { key:'hotels', label:'星级饭店数', unit:'家', yoyUnit:'%' },
   ];
 
   // 口径差异提示：跨城对比时易引起误读的指标，命中（城市 + 指标）即自动弹注
@@ -1984,7 +2079,7 @@ const HISTORICAL_INDEX = {
   const tblWrap = document.getElementById('trendTableWrap');
   const chartEl = document.getElementById('trendChart');
   let trendChart = null;
-  let state = { type:'line' };
+  let state = { type:'line', content:'total' };
 
   // 折线/柱体颜色选择：预设色板 + 自定义取色
   const TREND_COLORS = ['#1a237e','#e53935','#00897b','#fb8c00','#6a1b9a','#00838f','#d81b60','#3949ab'];
@@ -2024,7 +2119,35 @@ const HISTORICAL_INDEX = {
     });
   });
 
+  const contentBtns = document.getElementById('trendContentBtns');
+  contentBtns.querySelectorAll('.type-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      state.content = b.dataset.content;
+      contentBtns.querySelectorAll('.type-btn').forEach(x => x.classList.toggle('active', x === b));
+      if (trendChart) render();
+    });
+  });
+
   function fmt(v) { return v==null ? '—' : (v>=10000 ? v.toLocaleString() : (v % 1 === 0 ? v : v.toFixed(2))); }
+
+  // 同比/变化 数值解析（yoy 原串如 "8.1%"、"+120.12万"、"-0.6pp"、"2.2倍" → 数值）
+  function parseYoy(str) {
+    if (!str) return null;
+    const s = String(str).replace(/[+\s,]/g, '').replace(/万|pp|%|倍/g, '');
+    if (s === '' || s === '—' || s === 'null') return null;
+    const n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
+  function yoyAxisName(meta) {
+    if (meta.yoyUnit === 'pp') return '变化（百分点）';
+    if (meta.yoyUnit === '万') return '变化（万人）';
+    return '同比增幅（%）';
+  }
+  function yoyUnitText(meta) {
+    if (meta.yoyUnit === 'pp') return '百分点';
+    if (meta.yoyUnit === '万') return '万人';
+    return '%';
+  }
 
   function render() {
     const city = citySel.value;
@@ -2041,36 +2164,83 @@ const HISTORICAL_INDEX = {
     arr.forEach(r => byYear[r.year] = r[key]);
 
     const values = YEARS.map(y => { const d = byYear[y]; return (d && d.value !== undefined) ? d.value : null; });
+    const yoyVals = YEARS.map(y => { const d = byYear[y]; return (d && d.yoy) ? parseYoy(d.yoy) : null; });
     const missingYears = YEARS.filter((y,i) => values[i] === null);
 
     if (!trendChart) { chartEl.innerHTML = ''; trendChart = echarts.init(chartEl); window.trendChart = trendChart; }
-    const colors = ['#1a237e','#e53935','#00897b','#fb8c00','#6a1b9a','#3949ab','#00838f','#c0ca33','#d81b60'];
 
-    const catAxis = { type:'category', data: YEARS.map(String), boundaryGap: state.type==='bar',
+    const content = state.content;          // 'total' | 'yoy' | 'combo'
+    const combo = content === 'combo';
+    const showTotal = content === 'total' || combo;
+    const showYoy = content === 'yoy' || combo;
+    const yoyName = `${meta.label}·同比/变化`;
+
+    const catAxis = { type:'category', data: YEARS.map(String),
+      boundaryGap: combo ? true : (state.type==='bar'),
       axisLabel:{ fontFamily:'Microsoft YaHei', fontSize:13, color:'#444' }, axisLine:{ lineStyle:{ color:'#d0d0d0' } }, axisTick:{ show:false } };
-    const valAxis = { type:'value', name:`${meta.label}（${meta.unit}）`, nameTextStyle:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#888' },
-      axisLabel:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#666' }, splitLine:{ lineStyle:{ color:'#f0f0f0' } } };
 
-    const series = [{
-      name: meta.label, type: state.type, data: values,
-      smooth: state.type==='line' ? 0.6 : false, symbol:'circle', symbolSize:9, lineStyle:{ width:3 },
-      itemStyle:{ color: trendColor }, barMaxWidth: 46,
-      label:{ show:true, position: state.type==='bar' ? 'top' : 'top', formatter: p => p.value===null?(naCaliber?'无':'缺'):fmt(p.value),
-        fontFamily:'Microsoft YaHei', fontSize:12, color:'#333', fontWeight:600 },
-      connectNulls: false,
-      areaStyle: state.type==='line' ? { color: hexToRgba(trendColor, 0.08) } : undefined,
-      markPoint: state.type==='bar' ? undefined : { symbolSize:0, label:{ show:false } }
-    }];
+    const series = [];
+    if (showTotal) {
+      const totalType = combo ? 'bar' : state.type;
+      series.push({
+        name: meta.label, type: totalType, data: values, yAxisIndex: 0,
+        smooth: totalType==='line' ? 0.6 : false, symbol:'circle', symbolSize:9, lineStyle:{ width:3 },
+        itemStyle:{ color: trendColor }, barMaxWidth: 46,
+        label:{ show:true, position:'top', formatter: p => p.value===null?(naCaliber?'无':'缺'):fmt(p.value),
+          fontFamily:'Microsoft YaHei', fontSize:12, color:'#333', fontWeight:600 },
+        connectNulls: false,
+        areaStyle: totalType==='line' ? { color: hexToRgba(trendColor, 0.08) } : undefined
+      });
+    }
+    if (showYoy) {
+      const yoyType = combo ? 'line' : state.type;
+      series.push({
+        name: yoyName, type: yoyType, data: yoyVals, yAxisIndex: combo ? 1 : 0,
+        smooth: yoyType==='line' ? 0.6 : false, symbol:'circle', symbolSize:8, lineStyle:{ width:3 },
+        itemStyle:{ color: '#e53935' }, barMaxWidth: 30,
+        label:{ show:true, position:'top', formatter: p => p.value===null?'—':p.value+yoyUnitText(meta),
+          fontFamily:'Microsoft YaHei', fontSize:11, color:'#c62828', fontWeight:600 },
+        connectNulls: false
+      });
+    }
+
+    let yAxis;
+    if (combo) {
+      yAxis = [
+        { type:'value', name:`${meta.label}（${meta.unit}）`, nameTextStyle:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#888' },
+          axisLabel:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#666' }, splitLine:{ lineStyle:{ color:'#f0f0f0' } } },
+        { type:'value', name: yoyAxisName(meta), nameTextStyle:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#c62828' },
+          axisLabel:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#c62828' }, splitLine:{ show:false } }
+      ];
+    } else {
+      const nm = showYoy ? yoyAxisName(meta) : `${meta.label}（${meta.unit}）`;
+      yAxis = { type:'value', name: nm, nameTextStyle:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#888' },
+        axisLabel:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#666' }, splitLine:{ lineStyle:{ color:'#f0f0f0' } } };
+    }
+
+    const legend = combo ? { top:6, data:[meta.label, yoyName], textStyle:{ fontFamily:'Microsoft YaHei', fontSize:12, color:'#555' } } : undefined;
 
     trendChart.setOption({
       textStyle: { fontFamily:'Microsoft YaHei', fontSize:13 },
-      grid: { left:70, right:40, top:50, bottom:50, containLabel:true },
-      tooltip: { trigger:'axis', axisPointer:{ type: state.type==='bar'?'shadow':'line' },
-        formatter: ps => { const p=ps[0]; const d = byYear[+p.name];
-          let s = `${p.name}年 · ${city}<br/>${meta.label}：<b>${p.value===null?(naCaliber?'无（不适用）':'暂无数据'):fmt(p.value)+' '+meta.unit}</b>`;
-          if (d && d.yoy) s += `<br/>同比/变化：${d.yoy}`;
-          return s; } },
-      xAxis: catAxis, yAxis: valAxis, series
+      grid: { left:70, right: combo?72:40, top: combo?56:50, bottom:50, containLabel:true },
+      legend,
+      tooltip: { trigger:'axis', axisPointer:{ type: (showTotal && !combo && state.type==='bar')?'shadow':'line' },
+        formatter: ps => {
+          let s = `${ps[0].name}年 · ${city}<br/>`;
+          ps.forEach(p => {
+            const d = byYear[+p.name];
+            if (p.seriesName === meta.label) {
+              s += `${meta.label}：<b>${p.value===null?(naCaliber?'无（不适用）':'暂无数据'):fmt(p.value)+' '+meta.unit}</b>`;
+              if (!combo && d && d.yoy) s += `（同比/变化 ${d.yoy}）`;
+              s += '<br/>';
+            } else {
+              const raw = d && d.yoy ? d.yoy : '—';
+              s += `${yoyName}：<b>${p.value===null?'—':p.value+' '+yoyUnitText(meta)}</b>（${raw}）<br/>`;
+            }
+          });
+          return s;
+        } },
+      xAxis: catAxis, yAxis, series
     }, true);
 
     // 明细表
@@ -2085,19 +2255,29 @@ const HISTORICAL_INDEX = {
 
     // 口径 / 适用性 说明
     hint.innerHTML = caliber ? caliber.text : '';
+    let note = '';
     if (naCaliber) {
-      noteEl.innerHTML = `<b>不适用提示：</b>${city} 的「${meta.label}」无民航机场，不适用，统一记为"无"。`;
+      note = `<b>不适用提示：</b>${city} 的「${meta.label}」无民航机场，不适用，统一记为"无"。`;
     } else if (missingYears.length) {
-      noteEl.innerHTML = `<b>数据缺口提示：</b>${city} 的「${meta.label}」在 ${missingYears.join('、')} 年暂无权威公开数据（已留空，未编造）。`;
-    } else {
-      noteEl.innerHTML = '';
+      note = `<b>数据缺口提示：</b>${city} 的「${meta.label}」在 ${missingYears.join('、')} 年暂无权威公开数据（已留空，未编造）。`;
     }
+    if (combo) note += (note?'<br/>':'') + `<b>复合图说明：</b>左轴（柱）= 总量；右轴（红折）= 同比/变化。`;
+    else if (showYoy) note += (note?'<br/>':'') + `<b>同比/变化口径：</b>${yoyAxisName(meta)}（原始值见明细表）。`;
+    noteEl.innerHTML = note;
     if (caliber && !caliber.na) {
       noteEl.innerHTML += `<br/><span style="color:#b00;">${caliber.text}</span>`;
     }
   }
 
   document.getElementById('trendRender').addEventListener('click', render);
+  document.getElementById('trendDownload').addEventListener('click', () => {
+    if (!trendChart) { hint.textContent = '⚠️ 请先生成趋势图再下载'; return; }
+    const ratio = document.getElementById('trendExportRatio').value;
+    const dpi = +document.getElementById('trendExportDpi').value;
+    const title = document.getElementById('trendTitle').value;
+    const meta = METRICS.find(m => m.key === metricSel.value);
+    exportChart(trendChart, `城市趋势_${citySel.value}_${meta.label}.png`, ratio, dpi, title);
+  });
 })();
 });
 </script>
