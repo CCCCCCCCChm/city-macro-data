@@ -1084,6 +1084,10 @@ renderTable();
 </script>
 
 <script>
+/* 关键修复：echarts 通过 defer 异步加载，会在 DOMContentLoaded 之前执行完。
+   把本块所有逻辑包进 DOMContentLoaded，确保 echarts 已就绪、顶层 echarts.init 不再崩溃，
+   标签页点击监听 / viz / trend 等 IIFE 才能正常绑定。 */
+document.addEventListener('DOMContentLoaded', function() {
 /* ========== macro-score 逻辑 ========== */
 const CITY_DATA = [
   { name:'北京', gdp:52073.4, retail:13677.0, popInflow:5.55, tertiary:86.0, tertiaryOfficial:true },
@@ -2044,8 +2048,10 @@ const HISTORICAL_INDEX = {
 
   document.getElementById('trendRender').addEventListener('click', render);
 })();
+});
 </script>
 
 </body>
 </html>
+
 
