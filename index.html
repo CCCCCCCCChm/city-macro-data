@@ -348,6 +348,15 @@ tbody td { padding: 10px 10px; vertical-align: top; }
           </select>
         </div>
       </div>
+      <div class="field-row" style="margin-bottom:14px;">
+        <div class="field" style="min-width:220px;">
+          <label>柱体大小</label>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="range" id="vizBarSize" min="10" max="100" value="60" style="flex:1;accent-color:#3949ab;">
+            <span id="vizBarSizeVal" style="font-size:12px;color:#666;width:44px;text-align:right;">60%</span>
+          </div>
+        </div>
+      </div>
       <div class="field-row">
         <label class="chk"><input type="checkbox" id="vizShowLabel" checked> 显示数值</label>
         <label class="chk"><input type="checkbox" id="vizRounded" checked> 圆角柱体</label>
@@ -388,6 +397,10 @@ tbody td { padding: 10px 10px; vertical-align: top; }
             <button class="type-btn active" data-type="line">折线图</button>
             <button class="type-btn" data-type="bar">柱状图</button>
           </div>
+        </div>
+        <div class="field">
+          <label>折线颜色</label>
+          <div id="trendColorWrap" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"></div>
         </div>
         <div class="field">
           <label>&nbsp;</label>
@@ -1188,18 +1201,34 @@ INDICATORS.forEach((ind, i) => {
         <span class="text-sm text-slate-300">${ind.label}</span>
         <span class="text-[10px] text-slate-600">${ind.unit}</span>
       </div>
-      <div class="flex items-baseline gap-1">
-        <span class="num text-lg font-bold text-white" data-val="${i}">25</span>
+      <div class="flex items-center gap-1">
+        <input type="number" min="0" max="100" step="1" value="25" inputmode="numeric" data-val="${i}"
+          class="w-score-input" title="权重百分比（0-100 整数）"
+          style="width:52px;text-align:center;font-size:15px;font-weight:700;color:#fff;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:2px 4px;">
+        <span class="text-[10px] text-slate-600">%</span>
         <span class="text-[10px] text-slate-600" data-pct="${i}">25.0%</span>
       </div>
     </div>
     <input type="range" min="0" max="100" value="25" class="slider" data-idx="${i}" style="--ring:${ind.ring}">`;
   sliderWrap.appendChild(div);
-  const slider = div.querySelector('input');
+  const slider = div.querySelector('input[type=range]');
   const valEl  = div.querySelector('[data-val]');
   const pctEl  = div.querySelector('[data-pct]');
   sliders.push({ el:slider, valEl, pctEl, color:ind.color });
-  slider.addEventListener('input', () => { valEl.textContent = slider.value; update(); });
+  // 滑块 <-> 输入框 双向同步；输入框支持手动填写整数权重(0-100)
+  slider.addEventListener('input', () => { valEl.value = slider.value; update(); });
+  valEl.addEventListener('input', () => {
+    let v = parseInt(valEl.value, 10);
+    if (isNaN(v)) { slider.value = 0; update(); return; }
+    v = Math.max(0, Math.min(100, v));
+    slider.value = v; update();
+  });
+  valEl.addEventListener('blur', () => {
+    let v = parseInt(valEl.value, 10);
+    if (isNaN(v)) v = 0;
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    valEl.value = v; slider.value = v; update();
+  });
 });
 const weightBar = document.getElementById('weightBar');
 const weightSumEl = document.getElementById('weightSum');
@@ -1253,7 +1282,7 @@ function update(){
   sliders.forEach((s, i) => { s.pctEl.textContent = (weights[i]*100).toFixed(1)+'%'; s.valEl.style.color = rawW[i]===0?'#475569':'#fff'; });
   renderWeightBar(weights); renderChart(results); renderDetail(results, weights);
 }
-document.getElementById('resetBtn').addEventListener('click', () => { sliders.forEach(s => { s.el.value = 25; s.valEl.textContent = '25'; }); update(); });
+document.getElementById('resetBtn').addEventListener('click', () => { sliders.forEach(s => { s.el.value = 25; s.valEl.value = 25; }); update(); });
 window.addEventListener('resize', () => chart.resize());
 update();
 
@@ -1322,6 +1351,9 @@ update();
   const rounded = document.getElementById('vizRounded');
   const smooth = document.getElementById('vizSmooth');
   const horizontal = document.getElementById('vizHorizontal');
+  const barSize = document.getElementById('vizBarSize');
+  const barSizeVal = document.getElementById('vizBarSizeVal');
+  barSize.addEventListener('input', () => { barSizeVal.textContent = barSize.value + '%'; if (vizChart) render(); });
   const hint = document.getElementById('vizHint');
   const chartEl = document.getElementById('vizChart');
 
@@ -1446,7 +1478,7 @@ update();
       };
       if (state.type === 'bar') {
         baseSeries.type = 'bar';
-        baseSeries.barMaxWidth = 60;
+        baseSeries.barWidth = barSize.value + '%';
       } else {
         baseSeries.type = 'line';
         baseSeries.smooth = smooth.checked;
@@ -1485,6 +1517,7 @@ update();
     typeBtns.forEach(b => b.classList.toggle('active', b.dataset.type==='bar'));
     customColor.value = '#1a237e'; fontSel.selectedIndex = 0; fontSizeSel.selectedIndex = 1;
     showLabel.checked = true; rounded.checked = true; smooth.checked = false; horizontal.checked = false;
+    barSize.value = 60; barSizeVal.textContent = '60%';
     renderPalette();
     if (vizChart) render();
   });
@@ -1953,6 +1986,24 @@ const HISTORICAL_INDEX = {
   let trendChart = null;
   let state = { type:'line' };
 
+  // 折线/柱体颜色选择：预设色板 + 自定义取色
+  const TREND_COLORS = ['#1a237e','#e53935','#00897b','#fb8c00','#6a1b9a','#00838f','#d81b60','#3949ab'];
+  const trendColorWrap = document.getElementById('trendColorWrap');
+  let trendColor = '#1a237e';
+  function hexToRgba(hex, a) {
+    const n = parseInt(hex.replace('#',''),16);
+    return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+  }
+  function renderTrendColors(){
+    const sw = TREND_COLORS.map(c =>
+      `<span class="trend-color-swatch" data-c="${c}" title="${c}" style="width:22px;height:22px;border-radius:6px;cursor:pointer;background:${c};border:2px solid ${trendColor===c?'#1a237e':'transparent'};box-shadow:${trendColor===c?'inset 0 0 0 1px #fff':''}"></span>`
+    ).join('');
+    trendColorWrap.innerHTML = sw + `<input type="color" id="trendCustomColor" value="${trendColor}" style="width:34px;height:28px;border:1px solid #d8dce4;border-radius:6px;padding:2px;cursor:pointer;background:#fff;">`;
+    trendColorWrap.querySelectorAll('.trend-color-swatch').forEach(s => s.addEventListener('click', () => { trendColor = s.dataset.c; renderTrendColors(); if (trendChart) render(); }));
+    document.getElementById('trendCustomColor').addEventListener('input', e => { trendColor = e.target.value; renderTrendColors(); if (trendChart) render(); });
+  }
+  renderTrendColors();
+
   // 填充城市下拉（仅已采集）
   const cities = Object.values(HISTORICAL_INDEX).map(arr => arr[0].city);
   if (!cities.length) {
@@ -2002,12 +2053,12 @@ const HISTORICAL_INDEX = {
 
     const series = [{
       name: meta.label, type: state.type, data: values,
-      smooth: state.type==='line', symbol:'circle', symbolSize:9, lineStyle:{ width:3 },
-      itemStyle:{ color: colors[0] }, barMaxWidth: 46,
+      smooth: state.type==='line' ? 0.6 : false, symbol:'circle', symbolSize:9, lineStyle:{ width:3 },
+      itemStyle:{ color: trendColor }, barMaxWidth: 46,
       label:{ show:true, position: state.type==='bar' ? 'top' : 'top', formatter: p => p.value===null?(naCaliber?'无':'缺'):fmt(p.value),
         fontFamily:'Microsoft YaHei', fontSize:12, color:'#333', fontWeight:600 },
       connectNulls: false,
-      areaStyle: state.type==='line' ? { color:'rgba(26,35,126,0.06)' } : undefined,
+      areaStyle: state.type==='line' ? { color: hexToRgba(trendColor, 0.08) } : undefined,
       markPoint: state.type==='bar' ? undefined : { symbolSize:0, label:{ show:false } }
     }];
 
@@ -2053,5 +2104,6 @@ const HISTORICAL_INDEX = {
 
 </body>
 </html>
+
 
 
