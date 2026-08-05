@@ -436,6 +436,10 @@ tbody td { padding: 10px 10px; vertical-align: top; }
           <div id="trendColorWrap" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"></div>
         </div>
         <div class="field">
+          <label>同比折线颜色（同比变化 / 复合图）</label>
+          <div id="trendYoyColorWrap" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"></div>
+        </div>
+        <div class="field">
           <label>&nbsp;</label>
           <button id="trendRender" class="btn-main">生成趋势图</button>
         </div>
@@ -2085,6 +2089,7 @@ const HISTORICAL_INDEX = {
   const TREND_COLORS = ['#1a237e','#e53935','#00897b','#fb8c00','#6a1b9a','#00838f','#d81b60','#3949ab'];
   const trendColorWrap = document.getElementById('trendColorWrap');
   let trendColor = '#1a237e';
+  let trendYoyColor = '#e53935';
   function hexToRgba(hex, a) {
     const n = parseInt(hex.replace('#',''),16);
     return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
@@ -2098,6 +2103,17 @@ const HISTORICAL_INDEX = {
     document.getElementById('trendCustomColor').addEventListener('input', e => { trendColor = e.target.value; renderTrendColors(); if (trendChart) render(); });
   }
   renderTrendColors();
+
+  const trendYoyColorWrap = document.getElementById('trendYoyColorWrap');
+  function renderTrendYoyColors(){
+    const sw = TREND_COLORS.map(c =>
+      `<span class="trend-color-swatch" data-c="${c}" title="${c}" style="width:22px;height:22px;border-radius:6px;cursor:pointer;background:${c};border:2px solid ${trendYoyColor===c?'#e53935':'transparent'};box-shadow:${trendYoyColor===c?'inset 0 0 0 1px #fff':''}"></span>`
+    ).join('');
+    trendYoyColorWrap.innerHTML = sw + `<input type="color" id="trendYoyCustomColor" value="${trendYoyColor}" style="width:34px;height:28px;border:1px solid #d8dce4;border-radius:6px;padding:2px;cursor:pointer;background:#fff;">`;
+    trendYoyColorWrap.querySelectorAll('.trend-color-swatch').forEach(s => s.addEventListener('click', () => { trendYoyColor = s.dataset.c; renderTrendYoyColors(); if (trendChart && state.content==='combo') render(); }));
+    document.getElementById('trendYoyCustomColor').addEventListener('input', e => { trendYoyColor = e.target.value; renderTrendYoyColors(); if (trendChart && state.content==='combo') render(); });
+  }
+  renderTrendYoyColors();
 
   // 填充城市下拉（仅已采集）
   const cities = Object.values(HISTORICAL_INDEX).map(arr => arr[0].city);
@@ -2185,7 +2201,7 @@ const HISTORICAL_INDEX = {
       series.push({
         name: meta.label, type: totalType, data: values, yAxisIndex: 0,
         smooth: totalType==='line' ? 0.6 : false, symbol:'circle', symbolSize:9, lineStyle:{ width:3 },
-        itemStyle:{ color: trendColor }, barMaxWidth: 46,
+        itemStyle: combo ? { color: trendColor, opacity: 0.5 } : { color: trendColor }, barMaxWidth: 46,
         label:{ show:true, position:'top', formatter: p => p.value===null?(naCaliber?'无':'缺'):fmt(p.value),
           fontFamily:'Microsoft YaHei', fontSize:12, color:'#333', fontWeight:600 },
         connectNulls: false,
@@ -2196,8 +2212,9 @@ const HISTORICAL_INDEX = {
       const yoyType = combo ? 'line' : state.type;
       series.push({
         name: yoyName, type: yoyType, data: yoyVals, yAxisIndex: combo ? 1 : 0,
-        smooth: yoyType==='line' ? 0.6 : false, symbol:'circle', symbolSize:8, lineStyle:{ width:3 },
-        itemStyle:{ color: '#e53935' }, barMaxWidth: 30,
+        smooth: yoyType==='line' ? 0.6 : false, symbol:'circle', symbolSize: combo?7:8,
+        lineStyle:{ width: combo?3.5:3, color: trendYoyColor },
+        itemStyle:{ color: trendYoyColor, borderColor: combo?'#fff':undefined, borderWidth: combo?2:0 }, barMaxWidth: 30,
         label:{ show:true, position:'top', formatter: p => p.value===null?'—':p.value+yoyUnitText(meta),
           fontFamily:'Microsoft YaHei', fontSize:11, color:'#c62828', fontWeight:600 },
         connectNulls: false
